@@ -1,0 +1,31 @@
+# KASAJA
+
+Naira-first social marketplace for Nigeria connecting buyers, sellers and delivery riders.
+Buy. Sell. Deliver. Connect.
+
+**Live app:** YOUR-NETLIFY-LINK
+
+## What runs on Arc mainnet
+When a buyer confirms receipt, a Supabase Edge Function records a delivery receipt
+(a hash of the order id plus a timestamp: no personal data, no funds) on Arc mainnet.
+
+- Contract: `0x3622512fC2717B207a45Ccd0cf7dF527e818Ce8C` (Arc mainnet, chain 5042)
+- Verified source: https://repo.sourcify.dev/5042/0x3622512fC2717B207a45Ccd0cf7dF527e818Ce8C/
+- Example receipt transaction: https://explorer.arc.io/tx/YOUR-TX-HASH
+- Source: `contracts/KasajaDeliveryReceipts.sol`, recorder logic in `supabase/functions/`
+
+## Flow
+Buyer discovers a product, messages the seller, pays in Naira (Paystack), a rider delivers,
+the buyer confirms receipt, the order completes and the receipt is recorded on Arc.
+
+## Stack
+React, Vite, Tailwind, Supabase (Auth, Postgres, Realtime, Storage, Edge Functions), Paystack.
+
+## Run locally
+npm install --legacy-peer-deps
+Copy `.env.example` to `.env` and fill in your own values, then `npm run dev`.
+
+## Compliance position
+KASAJA is Naira-first. Rider balances are an accounting ledger, and payment protection is a
+transaction release workflow. Wallet and stablecoin features will be introduced only after the
+applicable Nigerian regulatory requirements are reviewed and satisfied.

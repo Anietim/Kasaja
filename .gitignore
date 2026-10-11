@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+out/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env*.local
+*.env
+
+# Supabase secrets
+supabase/.env
+supabase/config.toml
+
+# Recovery files — contain cryptographic secrets
+.circle/
+recovery_file*.dat
+*.recovery
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Foundry / Hardhat build artifacts (contain ABIs with constructor args that may include keys)
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+artifacts/
+cache/
+
+# Coverage
+coverage/
+lcov.info
+
+# Bun
+.bun/
