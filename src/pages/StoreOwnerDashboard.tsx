@@ -22,6 +22,7 @@ interface StoreData { id: string; name: string; description: string; is_verified
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   pending:    { label: 'Pending',     color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+  paid:       { label: 'Paid',        color: 'text-blue-400',   bg: 'bg-blue-500/10' },
   accepted:   { label: 'Accepted',   color: 'text-blue-400',   bg: 'bg-blue-500/10' },
   packed:     { label: 'Packed',     color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
   shipped:    { label: 'Shipped',    color: 'text-cyan-400',   bg: 'bg-cyan-500/10' },
@@ -364,7 +365,7 @@ export default function StoreOwnerDashboard() {
 
               {/* Action buttons */}
               <div className="space-y-2 pt-2">
-                {selectedOrder.status === 'pending' && (
+                {selectedOrder.status === 'paid' && (
                   <button
                     onClick={() => void markAccepted(selectedOrder.id)}
                     className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2"
@@ -411,7 +412,7 @@ export default function StoreOwnerDashboard() {
 
       {/* Mark as Shipped sheet */}
       {showShipSheet && (
-        <div className="fixed inset-0 z-60 flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
+        <div className="fixed inset-0 z-[70] flex flex-col justify-end" style={{ background: 'rgba(0,0,0,0.8)' }}>
           <div className="rounded-t-3xl px-5 pt-5 pb-10 space-y-4" style={{ background: '#11151A' }}>
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-white font-bold text-base">Mark as Shipped</h3>
@@ -449,7 +450,7 @@ export default function StoreOwnerDashboard() {
             <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/5 border border-cyan-500/20">
               <Truck className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-cyan-300">
-                The buyer will receive an instant notification with the tracking number. Escrow funds will be released 48 hours after delivery confirmation.
+                The buyer will receive an instant notification with the tracking number. Payment is released after the buyer confirms receipt.
               </p>
             </div>
 

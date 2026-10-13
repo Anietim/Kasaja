@@ -28,6 +28,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   processing: { label: 'Processing', color: 'text-blue-400 bg-blue-400/10', icon: <Clock size={14} /> },
   shipped: { label: 'Shipped', color: 'text-purple-400 bg-purple-400/10', icon: <Truck size={14} /> },
   dispatched: { label: 'On the way', color: 'text-purple-400 bg-purple-400/10', icon: <Truck size={14} /> },
+  accepted: { label: 'Accepted', color: 'text-blue-400 bg-blue-400/10', icon: <CheckCircle size={14} /> },
+  packed: { label: 'Packed', color: 'text-blue-400 bg-blue-400/10', icon: <Clock size={14} /> },
+  in_transit: { label: 'On the way', color: 'text-purple-400 bg-purple-400/10', icon: <Truck size={14} /> },
   delivered: { label: 'Delivered', color: 'text-green-400 bg-green-400/10', icon: <CheckCircle size={14} /> },
   completed: { label: 'Completed', color: 'text-green-400 bg-green-400/10', icon: <CheckCircle size={14} /> },
   cancelled: { label: 'Cancelled', color: 'text-red-400 bg-red-400/10', icon: <X size={14} /> },
@@ -306,7 +309,7 @@ export default function MyOrders() {
                   </a>
                 )}
                 
-                 {['dispatched', 'delivered'].includes(selected.status) && (
+                 {['dispatched', 'shipped', 'in_transit', 'delivered'].includes(selected.status) && (
                   <button onClick={() => void confirmDelivery(selected)} disabled={acting}
                     className="w-full py-4 bg-brand-500 text-white font-bold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50">
                     <CheckCircle size={18} />
