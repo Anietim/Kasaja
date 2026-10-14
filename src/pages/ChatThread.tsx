@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useTypingIndicator } from '@/hooks/useTypingIndicator'
+import { ChatWallpaperSheet, useChatWallpaper, wallpaperStyle } from '@/components/ChatWallpaperSheet'
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder'
 import { toast } from 'sonner'
 import {
@@ -11,6 +12,8 @@ import {
   MoreVertical, Phone, Video, Search
 } from 'lucide-react'
 
+const { wallpaper, save: saveWallpaper } = useChatWallpaper()
+const [showWallpaper, setShowWallpaper] = useState(false)
 const DEV = import.meta.env.DEV
 const DEV_ID = 'dev-super-admin-id'
 const DEV_NAME = 'Dev Admin'
@@ -164,6 +167,10 @@ export default function ChatThread() {
       .neq('sender_id', uid)
       .is('read_at', null)
   }, [id, uid])
+
+    useEffect(() => {
+    if (id) void supabase.rpc('mark_conversation_read', { p_conv: id })
+  }, [id, messages.length])
 
   useEffect(() => { void loadConv(); void loadMessages() }, [loadConv, loadMessages])
 
@@ -319,6 +326,7 @@ export default function ChatThread() {
         )}
         <div className="flex items-center gap-1">
           <button onClick={() => setShowSearch(!showSearch)} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400">
+          <button onClick={() => setShowWallpaper(true)} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 text-xs">🎨</button> 
             <Search size={18} />
           </button>
           <button className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400" onClick={() => toast.info('Voice call coming soon')}>
@@ -351,7 +359,7 @@ export default function ChatThread() {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1" style={wallpaperStyle(wallpaper)}>
         {filteredMessages.map((msg, idx) => {
           const isMine = msg.sender_id === uid
           const showAvatar = !isMine && (idx === 0 || filteredMessages[idx - 1]?.sender_id !== msg.sender_id)
@@ -576,6 +584,7 @@ export default function ChatThread() {
           </div>
         )}
       </div>
+      <ChatWallpaperSheet open={showWallpaper} onClose={() => setShowWallpaper(false)} current={wallpaper} onSave={saveWallpaper} />
     </div>
   )
 }

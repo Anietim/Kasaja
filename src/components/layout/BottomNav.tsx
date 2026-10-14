@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, Map, Plus, MessageSquare, Users } from 'lucide-react'
+import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 
 const TABS = [
   { icon: Home,         label: 'Home',    path: '/home' },
@@ -10,6 +11,7 @@ const TABS = [
 ]
 
 export default function BottomNav() {
+  const unread = useUnreadMessages()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -42,6 +44,11 @@ export default function BottomNav() {
               ) : (
                 <>
                   <div className="relative">
+                   {path === '/inbox' && unread > 0 && (
+                      <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center">
+                        {unread > 99 ? '99+' : unread}
+                      </span>
+                    )}
                     <Icon
                       size={22}
                       style={{ color: active ? '#a78bfa' : 'rgba(255,255,255,0.38)' }}

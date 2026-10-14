@@ -23,7 +23,7 @@ export default function Inbox() {
     if (!user) { setThreads(MOCK.threads); setLoading(false); return }
     const { data } = await supabase
       .from('conversations')
-      .select(`id, participant_a, participant_b, last_message_at, last_message_preview,
+      .select(`id, participant_a, participant_b, last_message_at, last_message_preview, unread_a, unread_b,
         pa:profiles!conversations_participant_a_fkey(display_name, avatar_url),
         pb:profiles!conversations_participant_b_fkey(display_name, avatar_url)`)
       .or(`participant_a.eq.${user.id},participant_b.eq.${user.id}`)
@@ -32,6 +32,7 @@ export default function Inbox() {
     if (data && data.length > 0) {
       const mapped = (data as unknown as Array<{
         id: string; participant_a: string; participant_b: string
+        unread_a: number; unread_b: number
         last_message_at: string; last_message_preview: string
         pa: { display_name: string; avatar_url?: string }[]
         pb: { display_name: string; avatar_url?: string }[]
@@ -40,7 +41,7 @@ export default function Inbox() {
         const other = isA ? (c.pb?.[0] ?? { display_name: 'Unknown' }) : (c.pa?.[0] ?? { display_name: 'Unknown' })
         return {
           id: c.id, other_name: other.display_name, other_avatar: other.avatar_url,
-          last_message: c.last_message_preview ?? '', last_at: c.last_message_at, unread: 0,
+          last_message: c.last_message_preview ?? '', last_at: c.last_message_at, unread: isA ? c.unread_a : c.unread_b,
         }
       })
       setThreads(mapped)
