@@ -4,6 +4,7 @@ import { X, Heart, Send, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'luc
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { getOrCreateConversation } from '@/lib/chat'
+import { useNavigate } from 'react-router-dom'
 
 interface Story {
   id: string
@@ -40,6 +41,7 @@ function timeAgo(ts: string) {
 }
 
 export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerProps) {
+  const navigate = useNavigate()
   const [groupIdx, setGroupIdx] = useState(initialGroupIndex)
   const [storyIdx, setStoryIdx] = useState(0)
   const [progress, setProgress] = useState(0)
@@ -183,8 +185,9 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
 
           {/* Header */}
           <div className="absolute top-6 left-0 right-0 flex items-center gap-3 px-3 pt-2">
-            <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white flex-shrink-0"
-              style={{ borderColor: '#7C3AED' }}>
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white flex-shrink-0 cursor-pointer"
+              style={{ borderColor: '#7C3AED' }}
+              onClick={() => { onClose(); void navigate(`/profile/${currentGroup.userId}`) }}>
               {currentGroup.avatarUrl ? (
                 <img src={currentGroup.avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -194,7 +197,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0" onClick={() => { onClose(); void navigate(`/profile/${currentGroup.userId}`) }}>
               <p className="text-white font-semibold text-sm truncate">{currentGroup.userName}</p>
               <p className="text-white/60 text-xs">{timeAgo(currentStory.created_at)}</p>
             </div>

@@ -34,11 +34,12 @@ const DEV_STORIES: Story[] = [
   { id: '6', user_id: 'u6', display_name: 'ChiefBoss', avatar_url: null, has_new: false },
   { id: '7', user_id: 'u7', display_name: 'Emeka Auto', avatar_url: null, has_new: true },
 ]
-
+type StoryRow = { id: string; user_id: string; media_url: string; media_type: string; caption: string | null; hashtags: string[] | null; expires_at: string; created_at: string; profiles?: { display_name: string; avatar_url: string | null } | null }
 const AVATAR_COLORS = ['#FF7A00', '#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4']
 
 export default function Home() {
   const navigate = useNavigate()
+  const [storyRows, setStoryRows] = useState<StoryRow[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stories, setStories]   = useState<Story[]>([])
   const [category, setCategory] = useState('All')
@@ -47,21 +48,32 @@ export default function Home() {
   const [viewerOpen, setViewerOpen] = useState(false)
   const [viewerGroupIdx, setViewerGroupIdx] = useState(0)
 
-  const storyGroups = stories.map(s => ({
-    userId: s.user_id,
-    userName: s.display_name,
-    avatarUrl: s.avatar_url ?? undefined,
-    stories: [{
-      id: s.id,
-      user_id: s.user_id,
-      media_url: `https://picsum.photos/seed/${s.id}/400/700`,
-      media_type: 'image' as const,
-      caption: 'Check out our latest arrivals!',
-      hashtags: ['kasaja', 'shopping'],
-      expires_at: new Date(VIEWER_NOW + 3600000).toISOString(),
-      created_at: new Date(VIEWER_NOW - 3600000).toISOString(),
-    }],
-  }))
+    const storyGroups = storyRows.length > 0
+    ? Array.from(new Set(storyRows.map(r => r.user_id))).map(uid => {
+        const mine = storyRows.filter(r => r.user_id === uid).slice().reverse()
+        const p = mine[0].profiles
+        return {
+          userId: uid,
+          userName: p?.display_name || 'User',
+          avatarUrl: p?.avatar_url ?? undefined,
+          stories: mine.map(r => ({
+            id: r.id, user_id: r.user_id, media_url: r.media_url,
+            media_type: (r.media_type === 'video' ? 'video' : 'image') as 'image' | 'video',
+            caption: r.caption ?? undefined, hashtags: r.hashtags ?? [],
+            expires_at: r.expires_at, created_at: r.created_at,
+          })),
+        }
+      })
+    : stories.map(s => ({
+        userId: s.user_id, userName: s.display_name, avatarUrl: s.avatar_url ?? undefined,
+        stories: [{
+          id: s.id, user_id: s.user_id,
+          media_url: `https://picsum.photos/seed/${s.id}/400/700`, media_type: 'image' as const,
+          caption: 'Sample status', hashtags: ['kasaja'],
+          expires_at: new Date(VIEWER_NOW + 3600000).toISOString(),
+          created_at: new Date(VIEWER_NOW - 3600000).toISOString(),
+        }],
+      }))
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -79,35 +91,34 @@ export default function Home() {
   }, [category])
 
   // Load stories from DB, fall back to dev mock
-  useEffect(() => {
-    async function loadStories() {
-      try {
-        const { data } = await supabase
-          .from('stories')
-          .select('id, user_id, profiles!user_id(display_name, avatar_url)')
-          .gt('expires_at', new Date().toISOString())
-          .order('created_at', { ascending: false })
-          .limit(12)
-        if (data && data.length > 0) {
-          setStories(data.map((s: unknown) => {
-            const row = s as { id: string; user_id: string; profiles?: { display_name: string; avatar_url: string | null } }
-            return {
-              id: row.id,
-              user_id: row.user_id,
-              display_name: row.profiles?.display_name ?? 'User',
-              avatar_url: row.profiles?.avatar_url ?? null,
-              has_new: true,
-            }
-          }))
-        } else {
-          setStories(DEV_STORIES)
-        }
-      } catch {
-        setStories(DEV_STORIES)
+useEffect(() => {
+  async function loadStories() {
+    try {
+      const { data } = await supabase
+        .from('stories')
+        .select('id, user_id, media_url, media_type, caption, hashtags, expires_at, created_at, profiles!user_id(display_name, avatar_url)')
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(60)
+      if (data && data.length > 0) {
+        const rows = data as unknown as StoryRow[]
+        setStoryRows(rows)
+        const seen = new Set<string>()
+        setStories(rows.filter(r => !seen.has(r.user_id) && seen.add(r.user_id)).map(r => ({
+          id: r.id, user_id: r.user_id,
+          display_name: r.profiles?.display_name || 'User',
+          avatar_url: r.profiles?.avatar_url ?? null,
+          has_new: true,
+        })))
+      } else {
+        setStories(import.meta.env.DEV ? DEV_STORIES : [])
       }
+    } catch {
+      setStories(DEV_STORIES)
     }
-    void loadStories()
-  }, [])
+  }
+  void loadStories()
+}, [])
 
   useEffect(() => { void load() }, [load])
 
