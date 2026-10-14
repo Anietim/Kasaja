@@ -16,6 +16,7 @@ interface Profile {
   phone: string | null
   email: string | null
   avatar_url: string | null
+  cover_url?: string | null
   bio: string | null
   location: string | null
   roles: string[]
@@ -191,6 +192,27 @@ export default function Profile() {
     }
   }
 
+    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !uid) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { toast.error('Only JPEG, PNG or WebP allowed'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5 MB'); return }
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `covers/${uid}.${ext}`
+      const { error } = await supabase.storage.from('kasaja-media').upload(path, file, { upsert: true })
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage.from('kasaja-media').getPublicUrl(path)
+      const url = `${publicUrl}?v=${Date.now()}`
+      const { error: upErr } = await supabase.from('profiles').update({ cover_url: url }).eq('id', uid)
+      if (upErr) throw upErr
+      setProfile(p => p ? { ...p, cover_url: url } : p)
+      toast.success('Banner updated')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Banner upload failed')
+    }
+  }
+
   const handleSignOut = async () => { await signOut(); void navigate('/login') }
 
   const formatNaira = (kobo: number) =>
@@ -229,12 +251,16 @@ export default function Profile() {
       {/* ── BANNER + AVATAR ─────────────────────────────── */}
       <div className="relative">
         <div className="h-52 w-full overflow-hidden relative">
-          {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="Cover" className="w-full h-full object-cover" />
+                    {profile.cover_url ? (
+            <img src={profile.cover_url} alt="Cover" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full" style={{ background: 'var(--gradient)' }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
+            <label className="absolute bottom-3 left-3 z-10 px-3 py-1.5 bg-black/50 backdrop-blur rounded-full text-xs text-white flex items-center gap-1 cursor-pointer">
+            <Camera size={14} /> Change banner
+            <input type="file" accept="image/*" className="hidden" onChange={e => { void handleCoverChange(e) }} />
+          </label>
         </div>
 
         {/* Settings top-right */}
@@ -262,7 +288,7 @@ export default function Profile() {
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-4xl font-black gradient-text">
-                    {(profile.display_name ?? 'U')[0].toUpperCase()}
+                    {(profile.display_name || 'U')[0]?.toUpperCase()}
                   </span>
                 )}
               </div>

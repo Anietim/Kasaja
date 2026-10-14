@@ -92,7 +92,7 @@ export default function NavDrawer({ open, onClose }: Props) {
   const roles: string[] = profile?.roles ?? []
   const isAdmin = roles.some(r => ['admin', 'investigation_admin', 'super_admin'].includes(r))
   const canSee = (title: string) =>
-    title === 'Seller' ? roles.includes('seller')
+      title === 'Seller' ? (roles.includes('seller') || roles.includes('independent'))
     : title === 'Rider' ? roles.includes('rider')
     : title === 'Admin' ? isAdmin
     : true

@@ -190,7 +190,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
                   style={{ background: 'linear-gradient(135deg,#7C3AED,#06B6D4)' }}>
-                  {currentGroup.userName[0].toUpperCase()}
+                  {currentGroup.userName[0]?.toUpperCase()}
                 </div>
               )}
             </div>

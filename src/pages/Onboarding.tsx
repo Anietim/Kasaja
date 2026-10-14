@@ -16,6 +16,7 @@ const NG_STATES = [
 const ROLES = [
   { id: 'buyer',  title: 'Buyer',  desc: 'Shop from sellers and markets across Nigeria.', icon: ShoppingBag },
   { id: 'seller', title: 'Seller', desc: 'Open a store, list products, receive orders.',  icon: Store },
+  { id: 'independent', title: 'Independent Shopper', desc: 'Sell anything without a shop. Verified before you can list.', icon: Store },
   { id: 'rider',  title: 'Rider',  desc: 'Deliver orders and earn.',                       icon: Bike },
 ]
 
@@ -162,7 +163,7 @@ export default function Onboarding() {
         id: uid,
         display_name: fullName.trim(),
         phone: normalisePhone(phone),
-        roles,
+        roles: roles.includes('independent') ? Array.from(new Set([...roles, 'buyer'])) : roles,
         state,
         city: city.trim(),
         interests,

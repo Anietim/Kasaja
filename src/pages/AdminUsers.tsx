@@ -181,7 +181,7 @@ export default function AdminUsers() {
               <div key={user.id} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: '#11151A', border: '1px solid rgba(255,255,255,0.04)' }}>
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm" style={{ background: 'linear-gradient(135deg,#7C3AED,#06B6D4)', color: '#fff' }}>
-                  {(user.display_name ?? 'U')[0].toUpperCase()}
+                  {(user.display_name || 'U')[0]?.toUpperCase()}
                 </div>
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -212,7 +212,7 @@ export default function AdminUsers() {
           <div className="w-full rounded-t-3xl p-5 space-y-2" style={{ background: '#11151A' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 pb-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold" style={{ background: 'linear-gradient(135deg,#7C3AED,#06B6D4)', color: '#fff' }}>
-                {(actionUser.display_name ?? 'U')[0].toUpperCase()}
+                {(actionUser.display_name || 'U')[0]?.toUpperCase()}
               </div>
               <div>
                 <p className="text-white font-semibold">{actionUser.display_name}</p>
