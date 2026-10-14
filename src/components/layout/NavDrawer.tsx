@@ -69,6 +69,11 @@ const SECTIONS = [
   },
 ]
 
+const ROLE_NAMES: Record<string, string> = {
+  buyer: 'Buyer', seller: 'Seller', independent: 'Independent Shopper', rider: 'Rider',
+  admin: 'Admin', super_admin: 'Admin', investigation_admin: 'Admin',
+}
+
 export default function NavDrawer({ open, onClose }: Props) {
   const navigate        = useNavigate()
   const { profile, user } = useAuth()
@@ -170,6 +175,11 @@ export default function NavDrawer({ open, onClose }: Props) {
                 >
                   {displayTitle}
                 </p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {Array.from(new Set(roles.map(r => ROLE_NAMES[r]).filter(Boolean))).map(n => (
+                    <span key={n} className="text-[11px] px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400">{n}</span>
+                  ))}
+                </div>
               </div>
             </div>
 

@@ -10,19 +10,13 @@ export default function AuthCallback() {
   useEffect(() => {
     void supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { void navigate('/login'); return }
-      void ensureProfile(session.user.id).then(async profile => {
-        // Request push permission silently after login
-        try {
-          const granted = await requestPushPermission()
-          if (granted) await subscribeToPush(session.user.id)
-        } catch { /* non-blocking */ }
-
-        if (!profile.onboarding_done) {
-          void navigate('/onboarding')
-        } else {
-          void navigate('/home')
-        }
-      })
+        void ensureProfile(session.user.id).then(profile => {
+        void navigate(profile.onboarding_done ? '/home' : '/onboarding', { replace: true })
+        // Ask for push permission after navigating, so it never blocks login
+        void requestPushPermission()
+          .then(granted => (granted ? subscribeToPush(session.user.id) : undefined))
+          .catch(() => { /* non-blocking */ })
+      }).catch(() => { void navigate('/onboarding', { replace: true }) })
     })
   }, [navigate])
 

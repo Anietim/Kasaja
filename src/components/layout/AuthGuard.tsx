@@ -4,7 +4,8 @@
  *      devRole is stored in localStorage so it survives route changes.
  * PROD: redirects unauthenticated users to /login.
  */
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { ChevronDown, X } from 'lucide-react'
@@ -41,6 +42,14 @@ export default function AuthGuard() {
   // Read from localStorage so role persists across route changes
   const [devRole, setDevRole] = useState<DevRole>(getSavedRole)
   const [open, setOpen] = useState(false)
+  const [onboardingDone, setOnboardingDone] = useState(false)
+  const [checkedPath, setCheckedPath] = useState<string | null>(null)
+  useEffect(() => {
+    if (DEV || !user || onboardingDone) return
+    const path = location.pathname
+    void supabase.from('profiles').select('onboarding_done').eq('id', user.id).maybeSingle()
+      .then(({ data }) => { setOnboardingDone(!!data?.onboarding_done); setCheckedPath(path) })
+  }, [user, location.pathname, onboardingDone])
 
   // In DEV mode, loading is always false (useAuth returns immediately)
   // In PROD, show spinner while session is being checked
@@ -55,6 +64,16 @@ export default function AuthGuard() {
   // Production only — redirect if not logged in
   if (!DEV && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+    if (!DEV && user && !onboardingDone) {
+    if (checkedPath !== location.pathname) {
+      return (
+        <div className="min-h-dvh bg-canvas flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )
+    }
+    if (location.pathname !== '/onboarding') return <Navigate to="/onboarding" replace />
   }
 
   const activeRole = ROLES.find(r => r.value === devRole)!
