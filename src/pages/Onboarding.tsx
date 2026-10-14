@@ -91,11 +91,8 @@ export default function Onboarding() {
   const current = steps[stepIndex]
   const isLast = stepIndex === steps.length - 1
 
-  function toggleRole(id: string) {
-    setRoles(prev => {
-      if (prev.includes(id)) return prev.length > 1 ? prev.filter(r => r !== id) : prev
-      return [...prev, id]
-    })
+    function toggleRole(id: string) {
+    setRoles([id])
   }
 
   function toggleInterest(name: string) {
@@ -256,7 +253,7 @@ export default function Onboarding() {
       <div className="flex-1">
         {current === 'role' && (
           <div className="space-y-3">
-            <p className="text-neutral-400 text-sm mb-2">Pick one or more. You can add more later.</p>
+            <p className="text-neutral-400 text-sm mb-2">Choose one. Independent Shoppers can also buy.</p>
             {ROLES.map(r => {
               const Icon = r.icon
               const on = roles.includes(r.id)
