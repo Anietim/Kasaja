@@ -278,7 +278,7 @@ export default function ProductForm() {
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-1.5">Condition</label>
           <div className="flex gap-2">
-            {(['new','used','refurbished'] as const).map(c => (
+            {(['new'] as const).map(c => (
               <button
                 key={c}
                 onClick={() => setCondition(c)}

@@ -62,12 +62,9 @@ const StudioWatermark = () => (
       border: '1px solid rgba(255, 255, 255, 0.4)',
       zIndex: 9999,
       boxShadow: '0 4px 20px rgba(27, 49, 88, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-    }}
-  >
-    <StudioLogo />
-    Built with Arc Studio
-  </a>
-)
+    }} 
+  ></a>
+  )
 
 // Service worker disabled for now (it kept serving old files)
 if ('serviceWorker' in navigator) {
