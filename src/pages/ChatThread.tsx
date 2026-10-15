@@ -12,8 +12,6 @@ import {
   MoreVertical, Phone, Video, Search
 } from 'lucide-react'
 
-const { wallpaper, save: saveWallpaper } = useChatWallpaper()
-const [showWallpaper, setShowWallpaper] = useState(false)
 const DEV = import.meta.env.DEV
 const DEV_ID = 'dev-super-admin-id'
 const DEV_NAME = 'Dev Admin'
@@ -111,7 +109,8 @@ export default function ChatThread() {
   const uid = DEV ? DEV_ID : user?.id ?? ''
   const uname = DEV ? DEV_NAME : (profile?.display_name ?? 'You')
   const myRoles: string[] = DEV ? ['buyer', 'seller', 'rider', 'admin', 'super_admin'] : (profile?.roles ?? ['buyer'])
-
+  const { wallpaper, save: saveWallpaper } = useChatWallpaper()
+  const [showWallpaper, setShowWallpaper] = useState(false)
   const [conv, setConv] = useState<ConvInfo | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState('')
@@ -173,7 +172,9 @@ export default function ChatThread() {
   }, [id, messages.length])
 
   useEffect(() => { void loadConv(); void loadMessages() }, [loadConv, loadMessages])
-
+    useEffect(() => {
+    if (id) void supabase.rpc('mark_conversation_read', { p_conv: id })
+  }, [id, messages.length])
   useEffect(() => {
     if (!id) return
     const channel = supabase.channel(`chat:${id}`)
