@@ -61,7 +61,7 @@ export async function savePushSubscription(userId: string, sub: PushSubscription
 }
 
 export function showLocalNotification(title: string, body: string, url?: string): void {
-  if (Notification.permission !== 'granted') return
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
   const n = new Notification(title, {
     body,
     icon: '/icons/icon-192.png',

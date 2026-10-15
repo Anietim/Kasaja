@@ -20,7 +20,7 @@ export default function Inbox() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    if (!user) { setThreads(MOCK.threads); setLoading(false); return }
+    if (!user) { setThreads([]); setLoading(false); return }
     const { data } = await supabase
       .from('conversations')
       .select(`id, participant_a, participant_b, last_message_at, last_message_preview, unread_a, unread_b,
@@ -38,7 +38,9 @@ export default function Inbox() {
         pb: { display_name: string; avatar_url?: string }[]
       }>).map(c => {
         const isA = c.participant_a === user.id
-        const other = isA ? (c.pb?.[0] ?? { display_name: 'Unknown' }) : (c.pa?.[0] ?? { display_name: 'Unknown' })
+        const raw = (isA ? c.pb : c.pa) as unknown
+        const first = (Array.isArray(raw) ? raw[0] : raw) as { display_name?: string; avatar_url?: string } | undefined
+        const other = { display_name: first?.display_name || 'KASAJA user', avatar_url: first?.avatar_url }
         return {
           id: c.id, other_name: other.display_name, other_avatar: other.avatar_url,
           last_message: c.last_message_preview ?? '', last_at: c.last_message_at, unread: isA ? c.unread_a : c.unread_b,
@@ -46,7 +48,7 @@ export default function Inbox() {
       })
       setThreads(mapped)
     } else {
-      setThreads(MOCK.threads)
+      setThreads([])
     }
     setLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps

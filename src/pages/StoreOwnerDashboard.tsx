@@ -44,7 +44,7 @@ export default function StoreOwnerDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [showShipSheet, setShowShipSheet] = useState(false)
   const [trackingNum, setTrackingNum] = useState('')
-  const [carrier, setCarrier] = useState('GIG Logistics')
+  const [carrier, setCarrier] = useState('KASAJA Rider')
   const [shipping, setShipping] = useState(false)
 
   const load = useCallback(async () => {
@@ -87,6 +87,23 @@ export default function StoreOwnerDashboard() {
         shipped_at: new Date().toISOString(),
       }).eq('id', selectedOrder.id)
       if (error) throw error
+        if (carrier === 'KASAJA Rider') {
+        const { data: { user: seller } } = await supabase.auth.getUser()
+        const fee = (selectedOrder as unknown as { delivery_fee_kobo?: number }).delivery_fee_kobo || 150000
+        const dropoff = (selectedOrder as unknown as { delivery_address?: string }).delivery_address || 'See order'
+        const { error: dErr } = await supabase.from('delivery_requests').insert({
+          order_id: selectedOrder.id,
+          requester_id: seller?.id,
+          pickup_address: store?.name ?? 'Store pickup',
+          dropoff_address: dropoff,
+          item_description: 'KASAJA order',
+          package_description: 'KASAJA order',
+          agreed_fee_kobo: fee,
+          agreed_price_kobo: fee,
+          status: 'pending',
+        })
+        if (dErr) throw dErr
+      }
 
       // Notify buyer
       await supabase.from('notifications').insert({
@@ -425,7 +442,7 @@ export default function StoreOwnerDashboard() {
             <div>
               <p className="text-xs text-zinc-400 mb-2">Delivery Carrier</p>
               <div className="grid grid-cols-3 gap-2">
-                {['GIG Logistics', 'DHL', 'GIGL', 'Kwik', 'Sendbox', 'Other'].map(c => (
+                {['KASAJA Rider', 'GIG Logistics', 'DHL', 'GIGL', 'Kwik', 'Sendbox', 'Other'].map(c => (
                   <button key={c} onClick={() => setCarrier(c)}
                     className={`py-2 rounded-xl text-xs font-medium transition-all ${carrier === c ? 'text-white' : 'text-zinc-400 bg-zinc-800'}`}
                     style={carrier === c ? { background: 'linear-gradient(135deg,#7C3AED,#06B6D4)' } : {}}>

@@ -324,9 +324,9 @@ export default function ChatThread() {
             </div>
           </button>
         )}
-        <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+          <button onClick={() => setShowWallpaper(true)} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 text-xs">🎨</button>
           <button onClick={() => setShowSearch(!showSearch)} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400">
-          <button onClick={() => setShowWallpaper(true)} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 text-xs">🎨</button> 
             <Search size={18} />
           </button>
           <button className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400" onClick={() => toast.info('Voice call coming soon')}>
@@ -375,13 +375,7 @@ export default function ChatThread() {
 
           return (
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group mb-1`}>
-              {!isMine && showAvatar && (
-                <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-bold text-white mr-2 mt-1 shrink-0">
-                  {msg.sender?.display_name?.[0]?.toUpperCase() ?? '?'}
-                </div>
-              )}
-              {!isMine && !showAvatar && <div className="w-9 shrink-0" />}
-
+             
               <div className="max-w-[75%]">
                 {/* Reply context */}
                 {msg.reply_to && (
