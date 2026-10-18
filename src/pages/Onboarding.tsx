@@ -5,6 +5,7 @@ import { ShoppingBag, Store, Bike, Loader2, Camera, ArrowRight, ArrowLeft } from
 import { supabase } from '@/lib/supabase'
 import { normalisePhone } from '@/lib/auth'
 import { PRODUCT_CATEGORIES } from '@/lib/utils'
+import { NG_AREAS } from '@/lib/ngAreas'
 
 const NG_STATES = [
   'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
@@ -295,13 +296,20 @@ export default function Onboarding() {
               <input className={inputCls} inputMode="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="0803 123 4567" />
             </Field>
             <Field label="State">
-              <select className={inputCls} value={state} onChange={e => setState(e.target.value)}>
+              <select className={inputCls} value={state} onChange={e => { setState(e.target.value); setCity('') }}>
                 <option value="">Select state</option>
                 {NG_STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
-            <Field label="City / area">
-              <input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Ikeja" />
+                        <Field label="City / area">
+              {NG_AREAS[state] ? (
+                <select className={inputCls} value={city} onChange={e => setCity(e.target.value)}>
+                  <option value="">Select your area</option>
+                  {NG_AREAS[state].map(a => <option key={a} value={a}>{a}</option>)}
+                </select>
+              ) : (
+                <input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Ikeja" />
+              )}
             </Field>
           </div>
         )}

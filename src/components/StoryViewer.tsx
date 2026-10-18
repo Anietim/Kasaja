@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Heart, Send, ChevronLeft, ChevronRight, Volume2, VolumeX } from 'lucide-react'
+import { X, Heart, Send, ChevronLeft, ChevronRight, Volume2, VolumeX, Eye } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { getOrCreateConversation } from '@/lib/chat'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Story {
   id: string
@@ -53,9 +54,14 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(0)
   const elapsed = useRef<number>(0)
+  const { user } = useAuth()
+  const [durationMs, setDurationMs] = useState(STORY_DURATION)
+  const [showViewers, setShowViewers] = useState(false)
+  const [viewers, setViewers] = useState<{ viewer_id: string; viewed_at: string; profiles?: { display_name: string | null; avatar_url: string | null } | null }[]>([])
 
   const currentGroup = groups[groupIdx]
   const currentStory = currentGroup?.stories[storyIdx]
+  const isOwner = !!user && currentStory?.user_id === user.id
 
   const goNext = useCallback(() => {
     if (!currentGroup) return
@@ -90,20 +96,25 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
 
   // Auto-advance timer
   useEffect(() => {
-    if (paused || showReply) return
+    if (paused || showReply || showViewers) return
     elapsed.current = 0
     startTimeRef.current = Date.now() // inside useEffect — not render, safe
     intervalRef.current = setInterval(() => {
       elapsed.current = Date.now() - startTimeRef.current
-      const pct = Math.min((elapsed.current / STORY_DURATION) * 100, 100)
+      const pct = Math.min((elapsed.current / durationMs) * 100, 100)
       setProgress(pct)
       if (pct >= 100) goNext()
     }, 50)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [storyIdx, groupIdx, paused, showReply, goNext])
+      }
 
+  }, [storyIdx, groupIdx, paused, showReply, showViewers, durationMs, goNext])
+
+    useEffect(() => {
+    setDurationMs(currentStory?.media_type === 'video' ? 30000 : STORY_DURATION)
+  }, [currentStory?.id, currentStory?.media_type])
+  
   // Mark as viewed
   useEffect(() => {
     if (!currentStory) return
@@ -116,6 +127,15 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
       }, { onConflict: 'story_id,viewer_id' })
     })()
   }, [currentStory])
+
+    useEffect(() => {
+    if (!currentStory || currentStory.user_id !== user?.id) { setViewers([]); return }
+    void supabase.from('story_views')
+      .select('viewer_id, viewed_at, profiles!viewer_id(display_name, avatar_url)')
+      .eq('story_id', currentStory.id)
+      .order('viewed_at', { ascending: false })
+      .then(({ data }) => setViewers((data ?? []) as unknown as typeof viewers))
+  }, [currentStory?.id, user?.id])
 
     async function sendReply() {
     if (!replyText.trim() || !currentStory) return
@@ -165,6 +185,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
                 className="absolute inset-0 w-full h-full object-cover"
+                onLoadedMetadata={e => setDurationMs(Math.max(1000, e.currentTarget.duration * 1000))}
               />
             ) : (
               <motion.img
@@ -235,6 +256,34 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
               onPointerUp={() => { setPaused(false); goNext() }}
               style={{ cursor: 'pointer' }} />
           </div>
+
+                    {isOwner && (
+            <button
+              className="absolute bottom-24 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 text-white text-sm"
+              onClick={() => setShowViewers(true)}
+            >
+              <Eye size={16} /> {viewers.length}
+            </button>
+          )}
+          {showViewers && (
+            <div className="absolute inset-0 z-30 bg-black/70 flex items-end" onClick={() => setShowViewers(false)}>
+              <div className="w-full max-h-[60%] overflow-y-auto bg-zinc-900 rounded-t-3xl p-4" onClick={e => e.stopPropagation()}>
+                <p className="text-white font-semibold mb-3">Viewed by {viewers.length}</p>
+                {viewers.length === 0 && <p className="text-zinc-400 text-sm">No views yet</p>}
+                {viewers.map(v => (
+                  <div key={v.viewer_id} className="flex items-center gap-3 py-2">
+                    <div className="w-9 h-9 rounded-full bg-zinc-700 overflow-hidden flex items-center justify-center text-white text-sm">
+                      {v.profiles?.avatar_url
+                        ? <img src={v.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                        : (v.profiles?.display_name || 'U')[0]?.toUpperCase()}
+                    </div>
+                    <span className="flex-1 text-white text-sm">{v.profiles?.display_name || 'KASAJA user'}</span>
+                    <span className="text-zinc-400 text-xs">{timeAgo(v.viewed_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Caption + hashtags */}
           {(currentStory.caption || (currentStory.hashtags?.length ?? 0) > 0) && (
