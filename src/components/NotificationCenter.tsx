@@ -78,7 +78,7 @@ export default function NotificationCenter({ open, onClose }: Props) {
         </div>
 
         {/* Request browser notifications */}
-        {typeof window !== 'undefined' && Notification.permission === 'default' && (
+        {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
           <div className="mx-4 mt-3 p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-between gap-2">
             <p className="text-xs text-brand-300">Enable push notifications to stay updated</p>
             <button

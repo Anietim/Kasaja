@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { useAuth } from './hooks/useAuth'
 import { Suspense, lazy } from 'react'
 import { Loader2 } from 'lucide-react'
 
@@ -68,6 +69,13 @@ function PageLoader() {
   )
 }
 
+function AdminOnly() {
+  const { profile, loading } = useAuth()
+  if (loading) return <PageLoader />
+  const isAdmin = (profile?.roles ?? []).some(r => ['admin', 'investigation_admin', 'super_admin'].includes(r))
+  return isAdmin ? <Outlet /> : <Navigate to="/home" replace />
+}
+
 function LoadingScreen() {
   return (
     <div className="min-h-dvh bg-canvas flex items-center justify-center">
@@ -132,12 +140,14 @@ export default function App() {
             <Route path="/profile/:id"       element={<Suspense fallback={<PageLoader />}><PublicProfile /></Suspense>} />
             <Route path="/people"            element={<Suspense fallback={<PageLoader />}><FindPeople /></Suspense>} />
             <Route path="/settings"          element={<Settings />} />
+            <Route element={<AdminOnly />}>
             <Route path="/admin"             element={<Suspense fallback={<PageLoader />}><AdminOrders /></Suspense>} />
             <Route path="/admin/groups"      element={<Suspense fallback={<PageLoader />}><AdminGroups /></Suspense>} />
             <Route path="/admin/disputes"    element={<Suspense fallback={<PageLoader />}><AdminDisputes /></Suspense>} />
             <Route path="/admin/analytics"   element={<Suspense fallback={<PageLoader />}><AdminAnalytics /></Suspense>} />
             <Route path="/admin/users"          element={<Suspense fallback={<PageLoader />}><AdminUsers /></Suspense>} />
             <Route path="/admin/verifications" element={<Suspense fallback={<PageLoader />}><AdminVerifications /></Suspense>} />
+            </Route> 
             <Route path="/seller-verification" element={<Suspense fallback={<PageLoader />}><SellerVerification /></Suspense>} />
             <Route path="/rider-verification"  element={<Suspense fallback={<PageLoader />}><RiderVerification /></Suspense>} />
           </Route>

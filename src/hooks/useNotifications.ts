@@ -85,7 +85,7 @@ export function useNotifications() {
         const n = payload.new as AppNotification
         setNotifications(prev => [n, ...prev])
         // Browser notification (if permission granted)
-        if (Notification.permission === 'granted') {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
           new Notification(n.title, { body: n.body, icon: '/kasaja-icon.png' })
         }
       })

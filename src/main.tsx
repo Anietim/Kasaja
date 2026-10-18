@@ -26,6 +26,14 @@ import App from './App'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './index.css'
 
+// iPhone browsers have no Notification API; provide a harmless stand-in
+if (typeof window !== 'undefined' && !('Notification' in window)) {
+  ;(window as unknown as { Notification: unknown }).Notification = class {
+    static permission = 'denied'
+    static requestPermission() { return Promise.resolve('denied') }
+  }
+}
+
 const queryClient = new QueryClient()
 
 // Studio logo SVG
