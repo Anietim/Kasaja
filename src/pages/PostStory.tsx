@@ -20,9 +20,17 @@ export default function PostStory() {
   const [posting, setPosting] = useState(false)
   const [step, setStep] = useState<'pick' | 'compose'>('pick')
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
+    if (f.type.startsWith('video/')) {
+      if (!['video/mp4', 'video/webm', 'video/quicktime'].includes(f.type)) { toast.error('Use an MP4, WebM or MOV video'); return }
+      if (f.size > 50 * 1024 * 1024) { toast.error('Video must be under 50 MB'); return }
+      setFile(f)
+      setPreview(URL.createObjectURL(f))
+      setStep('compose')
+      return
+    }
     void (async () => {
       const result = await validateImageFile(f)
       if (!result.ok) { toast.error(result.error ?? 'Invalid file'); return }
@@ -72,7 +80,7 @@ export default function PostStory() {
       const { error: insertErr } = await supabase.from('stories').insert({
         user_id: uid,
         media_url: urlData.publicUrl,
-        media_type: 'image',
+        media_type: file.type.startsWith('video/') ? 'video' : 'image',
         caption: caption.trim() || null,
         hashtags,
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -121,7 +129,7 @@ export default function PostStory() {
             <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
               JPEG, PNG or WebP · Max 10 MB · Story visible for 24 hours
             </p>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileChange} />
+           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleFileChange} />
           </motion.div>
         )}
 
@@ -135,7 +143,9 @@ export default function PostStory() {
           >
             {/* Image preview */}
             <div className="relative mx-4 mt-4 rounded-3xl overflow-hidden" style={{ aspectRatio: '9/16', maxHeight: '50vh' }}>
-              <img src={preview} alt="preview" className="w-full h-full object-cover" />
+               {file?.type.startsWith('video/')
+                ? <video src={preview} controls muted playsInline className="w-full h-full object-cover" />
+                : <img src={preview} alt="preview" className="w-full h-full object-cover" />}
               <button
                 onClick={() => { setPreview(null); setFile(null); setStep('pick') }}
                 className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
