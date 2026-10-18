@@ -71,11 +71,11 @@ export function useNotifications() {
 
   useEffect(() => { void load() }, [load])
 
-  // Supabase Realtime subscription (production only)
+    // Supabase Realtime subscription (production only)
   useEffect(() => {
     if (import.meta.env.DEV || !user) return
     const channel = supabase
-        .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
+      .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -84,16 +84,41 @@ export function useNotifications() {
       }, payload => {
         const n = payload.new as AppNotification
         setNotifications(prev => [n, ...prev])
-        // Browser notification (if permission granted)
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
           new Notification(n.title, { body: n.body, icon: '/kasaja-icon.png' })
         }
       })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, payload => {
+        const u = payload.new as AppNotification
+        setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
+           })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, payload => {
+        const u = payload.new as AppNotification
+        setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
+     })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      }, payload => {
+        const u = payload.new as AppNotification
+        setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
+      })
       .subscribe()
     return () => { void supabase.removeChannel(channel) }
   }, [user])
-
-  return { notifications, unreadCount, loading, markRead, markAllRead, deleteNotification }
+    return { notifications, unreadCount, loading, markRead, markAllRead, deleteNotification }
 }
 
 // Helper: send a group reply notification to the post author
