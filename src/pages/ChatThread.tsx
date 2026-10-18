@@ -102,6 +102,10 @@ function VoicePlayer({ url, duration }: { url: string; duration: number }) {
   )
 }
 
+const isEmojiOnly = (s: string) =>
+  /^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\u200d|\ufe0f|\s){1,12}$/u.test(s.trim()) &&
+  /\p{Extended_Pictographic}/u.test(s)
+
 export default function ChatThread() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -410,9 +414,11 @@ export default function ChatThread() {
                   )}
 
                   {/* Text */}
-                  {msg.content && (
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                  )}
+                      {msg.content && (
+                      isEmojiOnly(msg.content)
+                        ? <p className="text-5xl leading-tight px-2 py-1 rounded-2xl bg-white/20">{msg.content}</p>
+                        : <p className="text-base font-semibold leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                    )}
 
                   {/* Time + status */}
                   <div className={`flex items-center gap-1 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
@@ -560,7 +566,7 @@ export default function ChatThread() {
                 placeholder={msgAccess.allowed ? "Type a message..." : "You cannot message this user"}
                 disabled={!msgAccess.allowed}
                 rows={1}
-                className="w-full bg-transparent text-white text-sm outline-none placeholder:text-zinc-500 resize-none max-h-32"
+                className="w-full bg-transparent text-white text-base font-semibold outline-none placeholder:text-zinc-400 placeholder:font-normal resize-none max-h-32"
                 style={{ fieldSizing: 'content' }}
               />
             </div>
