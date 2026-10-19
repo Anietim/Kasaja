@@ -21,13 +21,13 @@ const SECTIONS = [
     items: [
       { icon: Home,          label: 'Home Feed',        path: '/home' },
       { icon: Search,        label: 'Search Products',  path: '/search' },
-            { icon: Users,         label: 'Find People',      path: '/people' },
+      { icon: Users,         label: 'Find People',      path: '/people' },
       { icon: TrendingUp,    label: 'Trending',         path: '/trending' },
       { icon: Map,           label: 'Markets',          path: '/markets' },
       { icon: Users,         label: 'Market Groups',    path: '/groups' },
       { icon: MessageSquare, label: 'Messages',         path: '/inbox' },
       { icon: Package,       label: 'My Orders',        path: '/orders' },
-      { icon: Truck,       label: 'Request Delivery', path: '/request-delivery' },
+      { icon: Truck,       label: 'Request a Rider',  path: '/request-rider' },
     ],
   },
   {

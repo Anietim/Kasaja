@@ -63,6 +63,7 @@ const FindPeople         = lazy(() => import('./pages/FindPeople'))
 const FindRider           = lazy(() => import('./pages/FindRider'))
 const Receipt             = lazy(() => import('./pages/Receipt'))
 const RiderJobs           = lazy(() => import('./pages/RiderJobs'))
+const RequestRider        = lazy(() => import('./pages/RequestRider'))
 
 function PageLoader() {
   return (
@@ -139,6 +140,7 @@ export default function App() {
             <Route path="/sell"              element={<Suspense fallback={<PageLoader />}><ProductForm /></Suspense>} />
             <Route path="/sell/product"      element={<Suspense fallback={<PageLoader />}><ProductForm /></Suspense>} />
             <Route path="/receipt/:id"       element={<Suspense fallback={<PageLoader />}><Receipt /></Suspense>} />
+            <Route path="/request-rider"     element={<Suspense fallback={<PageLoader />}><RequestRider /></Suspense>} />
             <Route path="/rider/jobs"        element={<Suspense fallback={<PageLoader />}><RiderJobs /></Suspense>} />
             <Route path="/find-rider/:id"    element={<Suspense fallback={<PageLoader />}><FindRider /></Suspense>} />
             <Route path="/store/dashboard"   element={<Suspense fallback={<PageLoader />}><StoreOwnerDashboard /></Suspense>} />
