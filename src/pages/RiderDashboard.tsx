@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { formatNaira } from '@/lib/paystack'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import RiderCounterButton from '@/components/RiderCounterButton'
 
 interface Job {
   id: string
@@ -54,6 +55,17 @@ export default function RiderDashboard() {
   const [loading, setLoading] = useState(true)
   const [online, setOnline] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [bidFor, setBidFor] = useState<string | null>(null)
+  const [bidAmount, setBidAmount] = useState('')
+  const sendBid = async (job: Job) => {
+    const amt = Math.round(Number(bidAmount) * 100)
+    if (!amt || amt < 30000) { toast.error('Enter a price of at least ₦300'); return }
+    const { data: { user: me } } = await supabase.auth.getUser()
+    const { error } = await supabase.from('delivery_bids').insert({ request_id: job.id, rider_id: me?.id, amount_kobo: amt })
+    if (error) { toast.error(error.message); return }
+    toast.success('Your price was sent to the seller')
+    setBidFor(null); setBidAmount('')
+  }
   const [stats, setStats] = useState({ today: 0, week: 0, rating: 5.0 })
 
   const loadAvailable = useCallback(async () => {
@@ -280,6 +292,7 @@ export default function RiderDashboard() {
                     {updating === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept'}
                   </button>
                 </div>
+              <RiderCounterButton jobId={job.id} />
               </motion.div>
             ))}
           </div>

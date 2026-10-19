@@ -77,6 +77,11 @@ export default function StoreOwnerDashboard() {
   }
 
   async function markShipped() {
+        if (carrier === 'KASAJA Rider' && selectedOrder) {
+      setShowShipSheet(false)
+      void navigate(`/find-rider/${selectedOrder.id}`)
+      return
+    }
     if (!selectedOrder) return
     setShipping(true)
     try {
@@ -132,6 +137,7 @@ export default function StoreOwnerDashboard() {
   async function markAccepted(orderId: string) {
     await supabase.from('orders').update({ status: 'accepted' }).eq('id', orderId)
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'accepted' } : o))
+    setShowShipSheet(true)
     toast.success('Order accepted')
   }
 
