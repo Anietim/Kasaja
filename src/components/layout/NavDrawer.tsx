@@ -43,6 +43,7 @@ const SECTIONS = [
     title: 'Rider',
     items: [
       { icon: Bike,        label: 'Rider Dashboard',  path: '/rider' },
+      { icon: Bike,        label: 'Delivery Jobs',    path: '/rider/jobs' },
       { icon: Wallet,      label: 'Wallet',           path: '/wallet' },
       { icon: ShieldCheck, label: 'Get Verified',     path: '/rider-verification' },
     ],

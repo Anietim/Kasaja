@@ -302,6 +302,7 @@ export default function MyOrders() {
 
               {/* Actions */}
               <div className="space-y-3">
+                <button onClick={() => void navigate(`/receipt/${selected.id}`)} className="block w-full text-center py-3 rounded-2xl border border-white/10 text-white text-sm font-semibold">View receipt</button>
                 {selected.status === 'completed' && selected.arc_tx_hash && (
                   <a href={`https://explorer.arc.io/tx/${selected.arc_tx_hash}`} target="_blank" rel="noreferrer"
                     className="block w-full text-center py-3 rounded-2xl border border-brand-500/40 text-brand-400 text-sm font-semibold">

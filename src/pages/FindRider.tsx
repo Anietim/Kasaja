@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ArrowLeft, Bike, Minus, Plus, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { NG_AREAS } from '@/lib/ngAreas'
 
 interface OrderRow {
   id: string
@@ -10,6 +11,7 @@ interface OrderRow {
   delivery_fee_kobo: number | null
   store: { name: string; address: string | null; state: string | null } | null
 }
+interface NearRider { id: string; display_name: string | null; vehicle_type: string; work_state: string | null; work_area: string | null; avg_rating: number; same_area: boolean }
 interface Bid { id: string; amount_kobo: number; rider_id: string }
 
 const naira = (n: number) => `₦${n.toLocaleString('en-NG')}`
@@ -20,7 +22,12 @@ export default function FindRider() {
   const [order, setOrder] = useState<OrderRow | null>(null)
   const [estimate, setEstimate] = useState(1500)
   const [price, setPrice] = useState(1500)
-  const [riders, setRiders] = useState<number | null>(null)
+  const [nearby, setNearby] = useState<NearRider[] | null>(null)
+  const [searching, setSearching] = useState(false)
+  const [pState, setPState] = useState('')
+  const [pArea, setPArea] = useState('')
+  const [dState, setDState] = useState('')
+  const [dArea, setDArea] = useState('')
   const [posting, setPosting] = useState(false)
   const [jobId, setJobId] = useState<string | null>(null)
   const [bids, setBids] = useState<Bid[]>([])
@@ -37,9 +44,8 @@ export default function FindRider() {
       const est = Math.round((o?.delivery_fee_kobo || 150000) / 100)
       setEstimate(est)
       setPrice(est)
-      const { count } = await supabase.from('rider_profiles')
-        .select('id', { count: 'exact', head: true }).eq('is_online', true)
-      setRiders(count ?? 0)
+      const st = o?.store?.state ?? ''
+      if (NG_AREAS[st]) { setPState(st); setDState(st) }
     })()
   }, [id])
 
@@ -57,6 +63,14 @@ export default function FindRider() {
     return () => clearInterval(t)
   }, [jobId])
 
+  async function searchRiders() {
+    setSearching(true)
+    const { data, error } = await supabase.rpc('nearby_riders', { p_state: pState || null, p_area: pArea || null })
+    if (error) toast.error(error.message)
+    setNearby((data ?? []) as NearRider[])
+    setSearching(false)
+  }
+
   const step = 100
   const change = (d: number) => setPrice(p => Math.min(20000, Math.max(300, p + d)))
 
@@ -73,6 +87,8 @@ export default function FindRider() {
         dropoff_address: order.delivery_address || 'See order',
         item_description: 'KASAJA order',
         package_description: 'KASAJA order',
+        pickup_area: pArea || null,
+        dropoff_area: dArea || null,
         agreed_fee_kobo: kobo,
         agreed_price_kobo: kobo,
         status: 'pending',
@@ -130,9 +146,45 @@ export default function FindRider() {
           )}
         </div>
 
-        <div className="flex items-center gap-3 bg-surface-900 rounded-2xl p-4">
-          <Bike className="text-brand-500" />
-          <p className="text-sm text-neutral-300">{riders === null ? 'Checking riders…' : `${riders} rider${riders === 1 ? '' : 's'} online now`}</p>
+        <div className="bg-surface-900 rounded-2xl p-4 space-y-2">
+          <p className="text-sm text-white font-semibold">Pickup area</p>
+          <div className="flex gap-2">
+            <select className="flex-1 bg-surface-800 rounded-xl px-3 py-2.5 text-white text-sm" value={pState} onChange={e => { setPState(e.target.value); setPArea('') }}>
+              <option value="">State</option>
+              {Object.keys(NG_AREAS).map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select className="flex-1 bg-surface-800 rounded-xl px-3 py-2.5 text-white text-sm" value={pArea} onChange={e => setPArea(e.target.value)} disabled={!pState}>
+              <option value="">Area</option>
+              {(NG_AREAS[pState] ?? []).map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <p className="text-sm text-white font-semibold pt-1">Drop-off area</p>
+          <div className="flex gap-2">
+            <select className="flex-1 bg-surface-800 rounded-xl px-3 py-2.5 text-white text-sm" value={dState} onChange={e => { setDState(e.target.value); setDArea('') }}>
+              <option value="">State</option>
+              {Object.keys(NG_AREAS).map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select className="flex-1 bg-surface-800 rounded-xl px-3 py-2.5 text-white text-sm" value={dArea} onChange={e => setDArea(e.target.value)} disabled={!dState}>
+              <option value="">Area</option>
+              {(NG_AREAS[dState] ?? []).map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-surface-900 rounded-2xl p-4">
+          <button onClick={() => void searchRiders()} disabled={searching} className="w-full flex items-center justify-center gap-2 bg-surface-800 text-white font-semibold py-3 rounded-xl">
+            <Bike className="text-brand-500" size={18} /> {searching ? 'Searching…' : 'Search riders near pickup'}
+          </button>
+          {nearby && nearby.length === 0 && <p className="text-xs text-neutral-500 mt-3 text-center">No riders online near this pickup right now. You can still post the job.</p>}
+          {(nearby ?? []).map(r => (
+            <div key={r.id} className="flex items-center justify-between py-2 border-t border-surface-800 mt-3 text-sm">
+              <div>
+                <p className="text-white">{r.display_name || 'Rider'} <span className="text-neutral-500 capitalize">· {r.vehicle_type}</span></p>
+                <p className="text-xs text-neutral-500">{r.work_area || r.work_state || 'Area not set'}{r.same_area ? ' · in your pickup area' : ''}</p>
+              </div>
+              <span className="text-xs text-amber-300">★ {Number(r.avg_rating || 0).toFixed(1)}</span>
+            </div>
+          ))}
         </div>
 
         {jobId && (

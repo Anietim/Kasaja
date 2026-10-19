@@ -309,7 +309,7 @@ export default function StoreOwnerDashboard() {
                     <span className="text-white font-bold">{fmt(o.total_kobo)}</span>
                     <span className={`text-xs px-2 py-1 rounded-lg font-medium ${st.bg} ${st.color}`}>{st.label}</span>
                   </div>
-                  <p className="text-zinc-500 text-xs">{fmtDate(o.created_at)} · #{o.id.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-zinc-500 text-xs">{fmtDate(o.created_at)} · #{(o as unknown as { order_number?: string }).order_number ?? o.id.slice(0, 8).toUpperCase()}</p>
                   {o.tracking_number && (
                     <p className="text-cyan-400 text-xs mt-1">Tracking: {o.tracking_number}</p>
                   )}
@@ -328,7 +328,8 @@ export default function StoreOwnerDashboard() {
             {/* Sheet header */}
             <div className="sticky top-0 flex items-center justify-between px-5 pt-5 pb-3" style={{ background: '#11151A' }}>
               <div>
-                <h3 className="text-white font-bold text-base">Order #{selectedOrder.id.slice(0, 8).toUpperCase()}</h3>
+                <h3 className="text-white font-bold text-base">Order #{(selectedOrder as unknown as { order_number?: string }).order_number ?? selectedOrder.id.slice(0, 8).toUpperCase()}</h3>
+<button onClick={() => void navigate(`/receipt/${selectedOrder.id}`)} className="text-brand-400 text-xs">View receipt</button>
                 <p className="text-zinc-500 text-xs">{fmtDate(selectedOrder.created_at)}</p>
               </div>
               <button onClick={() => setSelectedOrder(null)} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
