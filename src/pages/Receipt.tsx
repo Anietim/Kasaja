@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Printer, Loader2, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import DeliveredHero from '@/components/home/DeliveredHero'
 
 interface ReceiptRow {
   id: string
@@ -77,7 +78,10 @@ export default function Receipt() {
         <button onClick={() => window.print()} className="flex items-center gap-1.5 text-sm text-brand-400"><Printer size={16} /> Print / Save PDF</button>
       </div>
 
-      <div className="max-w-md mx-auto px-4 pt-6">
+      <div className="max-w-md mx-auto px-4 pt-2">
+        {(r.status === 'completed' || r.status === 'delivered' || r.arc_tx_hash) && (
+        <DeliveredHero productTitle={r.product?.title ?? 'order'} onChain={!!r.arc_tx_hash} />
+        )}
         <div className="bg-surface-900 print:bg-white print:text-black rounded-2xl p-5 space-y-4">
           <div className="text-center">
             <p className="text-brand-400 font-extrabold tracking-tight text-xl">KASAJA</p>

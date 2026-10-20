@@ -5,6 +5,9 @@ import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { MOCK } from '@/lib/mockData'
 import { StoryViewer } from '@/components/StoryViewer'
+import LiveOrderCard from '@/components/home/LiveOrderCard'
+import FlashDeals from '@/components/home/FlashDeals'
+import FollowingFeed from '@/components/home/FollowingFeed'
 
 interface Product {
   id: string; title: string; price_kobo: number; price_type: string
@@ -211,6 +214,7 @@ useEffect(() => {
         </div>
       </div>
 
+      <LiveOrderCard />
       {/* ── Sticky controls ── */}
       <div
         className="sticky top-14 z-20 px-4 pt-4 pb-3"
@@ -289,7 +293,9 @@ useEffect(() => {
           ))}
         </div>
       </div>
-
+      
+    <FlashDeals />
+    <FollowingFeed />
       {/* ── Product grid ── */}
       <div className="px-4">
         <div className="flex items-center justify-between mb-3">
