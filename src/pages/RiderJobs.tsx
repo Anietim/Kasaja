@@ -15,6 +15,7 @@ interface Job {
   dropoff_area: string | null
   pickup_lat: number | null
   pickup_lng: number | null
+  invited_rider_id: string | null
   agreed_fee_kobo: number | null
   agreed_price_kobo: number | null
   created_at: string
@@ -39,6 +40,7 @@ export default function RiderJobs() {
   const [area, setArea] = useState('')
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null)
   const [online, setOnline] = useState(false)
+  const [me, setMe] = useState<string | null>(null)
   const [jobs, setJobs] = useState<Job[]>([])
   const [skipped, setSkipped] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -46,7 +48,7 @@ export default function RiderJobs() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('delivery_requests')
-      .select('id, pickup_address, dropoff_address, pickup_area, dropoff_area, pickup_lat, pickup_lng, agreed_fee_kobo, agreed_price_kobo, created_at')
+      .select('id, pickup_address, dropoff_address, pickup_area, dropoff_area, pickup_lat, pickup_lng, invited_rider_id, agreed_fee_kobo, agreed_price_kobo, created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(60)
@@ -58,6 +60,7 @@ export default function RiderJobs() {
     void (async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        setMe(user.id)
         const { data } = await supabase.from('rider_profiles')
           .select('work_state, work_area, is_online, current_lat, current_lng').eq('id', user.id).maybeSingle()
         setState((data?.work_state as string) ?? '')
@@ -96,6 +99,13 @@ export default function RiderJobs() {
     const next = !online
     setOnline(next)
     await savePlace({ is_online: next, last_seen: new Date().toISOString() })
+    if (next && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        p => movePin(p.coords.latitude, p.coords.longitude),
+        () => toast('Tap the map to set your location so customers can see you', { icon: '📍' }),
+        { enableHighAccuracy: true, timeout: 10000 },
+      )
+    }
   }
 
   async function accept(job: Job) {
@@ -111,6 +121,8 @@ export default function RiderJobs() {
   const visible = jobs.filter(j => !skipped.has(j.id))
   const distanceOf = (j: Job) => (pos && j.pickup_lat && j.pickup_lng) ? km(pos, { lat: Number(j.pickup_lat), lng: Number(j.pickup_lng) }) : null
   const sorted = [...visible].sort((a, b) => {
+    const ia = a.invited_rider_id === me ? 0 : 1, ib = b.invited_rider_id === me ? 0 : 1
+    if (ia !== ib) return ia - ib
     const da = distanceOf(a), db = distanceOf(b)
     if (da !== null && db !== null) return da - db
     if (da !== null) return -1
@@ -137,7 +149,7 @@ export default function RiderJobs() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        <RiderMap center={pos ?? LAGOS} pins={pins} onMapClick={movePin} height={280} />
+        <RiderMap center={pos ?? LAGOS} pins={pins} onMapClick={movePin} height={300} fit={false} />
         <button onClick={useMyLocation} className="w-full flex items-center justify-center gap-2 bg-surface-800 text-white py-3 rounded-xl text-sm font-semibold">
           <LocateFixed size={16} className="text-brand-500" /> Use my current location
         </button>
@@ -175,6 +187,7 @@ export default function RiderJobs() {
                     {(j.pickup_area || j.pickup_address || 'Pickup')} → {(j.dropoff_area || j.dropoff_address || 'Drop-off')}
                   </p>
                   <p className="text-xs text-neutral-500 truncate mt-1">{j.pickup_address} → {j.dropoff_address}</p>
+                  {j.invited_rider_id === me && <p className="text-xs font-bold text-brand-400 mt-1">You were invited to this job</p>}
                   <p className="text-xs mt-1">
                     {d !== null && <span className="text-neutral-300">{d.toFixed(1)} km from you · </span>}
                     {near ? <span className="text-green-400">Near you</span> : <span className="text-amber-300">Far from you</span>}

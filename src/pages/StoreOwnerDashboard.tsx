@@ -445,19 +445,31 @@ export default function StoreOwnerDashboard() {
               </button>
             </div>
 
-            {/* Carrier */}
-            <div>
-              <p className="text-xs text-zinc-400 mb-2">Delivery Carrier</p>
-              <div className="grid grid-cols-3 gap-2">
-                {['KASAJA Rider', 'GIG Logistics', 'DHL', 'GIGL', 'Kwik', 'Sendbox', 'Other'].map(c => (
-                  <button key={c} onClick={() => setCarrier(c)}
-                    className={`py-2 rounded-xl text-xs font-medium transition-all ${carrier === c ? 'text-white' : 'text-zinc-400 bg-zinc-800'}`}
-                    style={carrier === c ? { background: 'linear-gradient(135deg,#7C3AED,#06B6D4)' } : {}}>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* Carrier */}
+  <div>
+  <p className="text-xs text-zinc-400 mb-2">Delivery Carrier</p>
+  
+  <div className="grid grid-cols-3 gap-2 mb-3">
+    {['KASAJA Rider', 'GIG Logistics', 'DHL', 'GIGL', 'Kwik', 'Sendbox', 'Other'].map(c => (
+      <button 
+        key={c} 
+        onClick={() => setCarrier(c)}
+        className={`py-2 rounded-xl text-xs font-medium transition-all ${carrier === c ? 'text-white' : 'text-zinc-400 bg-zinc-800'}`}
+        style={carrier === c ? { background: 'linear-gradient(135deg,#7C3AED,#06B6D4)' } : {}}
+      >
+        {c}
+      </button>
+    ))}
+  </div>
+
+  {/* Request Rider (Map) Button */}
+  <button 
+    onClick={() => { setShowShipSheet(false); void navigate(`/find-rider/${selectedOrder?.id}`) }} 
+    className="w-full mb-4 bg-brand-500 text-white font-semibold py-3 rounded-xl"
+  >
+    Request a rider (map)
+  </button>
+</div>
 
             {/* Tracking number */}
             <div>
