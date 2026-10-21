@@ -4,6 +4,7 @@ import BottomNav from './BottomNav'
 import DesktopSidebar from './DesktopSidebar'
 import RightPanel from './RightPanel'
 import { useDesk } from '@/hooks/useDesk'
+import '@/styles/kasaja-theme.css'
 
 export default function AppLayout() {
   const desk = useDesk()
@@ -12,7 +13,7 @@ export default function AppLayout() {
   // Each panel scrolls on its own and the layout never reflows when the browser is zoomed.
   if (desk) {
     return (
-      <div className="h-dvh overflow-x-auto overflow-y-hidden" style={{ backgroundColor: '#09070B' }}>
+      <div className="h-dvh overflow-x-auto overflow-y-hidden" style={{ backgroundColor: 'var(--k-bg)' }}>
         <div className="flex h-full min-w-[1200px]">
           <DesktopSidebar />
           <main className="flex-1 min-w-0 h-full overflow-y-auto">

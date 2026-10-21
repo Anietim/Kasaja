@@ -7,7 +7,7 @@ function greeting() {
   return 'Good evening'
 }
 
-/** "Good morning, Ada" with an initial avatar. Sits above the stories row on Home. */
+/** "Good morning, Ada" with an initial avatar. Phone and tablet only. */
 export default function HomeGreeting() {
   const { profile } = useAuth()
   const name = (profile?.display_name || '').trim().split(' ')[0] || 'there'
@@ -17,14 +17,14 @@ export default function HomeGreeting() {
       {profile?.avatar_url ? (
         <img src={profile.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover" />
       ) : (
-        <span className="w-11 h-11 rounded-full flex items-center justify-center font-extrabold text-black"
-          style={{ background: 'linear-gradient(135deg,#FF6A13,#E24A00)' }}>
+        <span className="w-11 h-11 rounded-full flex items-center justify-center font-extrabold"
+          style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>
           {name[0]?.toUpperCase()}
         </span>
       )}
       <div>
-        <p className="text-[13px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{greeting()}</p>
-        <p className="text-lg font-extrabold tracking-tight text-white leading-tight">{name}</p>
+        <p className="text-[13px]" style={{ color: 'var(--k-muted)' }}>{greeting()}</p>
+        <p className="text-lg font-extrabold tracking-tight leading-tight" style={{ color: 'var(--k-text)' }}>{name}</p>
       </div>
     </div>
   )

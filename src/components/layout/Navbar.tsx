@@ -23,7 +23,7 @@ export default function Navbar() {
     <>
       <header
         className="sticky top-0 z-40 backdrop-blur-xl border-b"
-        style={{ backgroundColor: 'rgba(8,10,13,0.97)', borderColor: 'rgba(255,255,255,0.05)' }}
+        style={{ backgroundColor: 'var(--k-bg, #080A0D)', borderColor: 'var(--k-line, rgba(255,255,255,0.05))' }}
       >
         <div className="flex items-center h-14 px-3 gap-2">
 
@@ -40,18 +40,18 @@ export default function Navbar() {
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="Search products, stores, markets…"
+                placeholder="Search products or stores"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm text-white outline-none transition-all"
                 style={{
-                  background: '#11151A',
-                  border: '1px solid rgba(124,58,237,0.25)',
+                  background: 'var(--k-surface, #11151A)',
+                  border: '1px solid var(--k-line, rgba(255,255,255,0.1))',
                   fontFamily: 'DM Sans, sans-serif',
                   height: '38px',
                 }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--k-accent, #FF7A1A)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--k-line, rgba(255,255,255,0.1))' }}
               />
               {query ? (
                 <button
@@ -81,7 +81,7 @@ export default function Navbar() {
             {unreadCount > 0 && (
               <span
                 className="absolute top-1.5 right-1.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white px-0.5"
-                style={{ background: '#7C3AED' }}
+                style={{ background: 'var(--k-accent, #FF7A1A)', color: 'var(--k-on-accent, #1A0B05)' }}
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>

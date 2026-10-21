@@ -24,9 +24,22 @@ const DEV_MOCK: AppNotification[] = [
   { id: '8', type: 'system', title: 'Store verified ✓', body: 'Congratulations! Your store has been verified.', read: true, created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
 ]
 
+// Every part of the app that calls useNotifications() (the bell, the panel) shares one list,
+// so opening notifications updates the bell's count right away.
+type Listener = (n: AppNotification[]) => void
+const listeners = new Set<Listener>()
+
 export function useNotifications() {
   const { user } = useAuth()
-  const [notifications, setNotifications] = useState<AppNotification[]>([])
+  const [notifications, setLocal] = useState<AppNotification[]>([])
+  const setNotifications = useCallback((u: AppNotification[] | ((p: AppNotification[]) => AppNotification[])) => {
+    setLocal(prev => {
+      const next = typeof u === 'function' ? u(prev) : u
+      queueMicrotask(() => listeners.forEach(l => { if (l !== setLocal) l(next) }))
+      return next
+    })
+  }, [])
+  useEffect(() => { listeners.add(setLocal); return () => { listeners.delete(setLocal) } }, [])
   const [loading, setLoading] = useState(true)
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -71,54 +84,31 @@ export function useNotifications() {
 
   useEffect(() => { void load() }, [load])
 
-    // Supabase Realtime subscription (production only)
+  // Supabase Realtime subscription (production only)
   useEffect(() => {
     if (import.meta.env.DEV || !user) return
     const channel = supabase
       .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
+        event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}`,
       }, payload => {
         const n = payload.new as AppNotification
-        setNotifications(prev => [n, ...prev])
+        setNotifications(prev => (prev.some(x => x.id === n.id) ? prev : [n, ...prev]))
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          new Notification(n.title, { body: n.body, icon: '/kasaja-icon.png' })
+          new Notification(n.title, { body: n.body, icon: '/icon-192.png' })
         }
       })
       .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, payload => {
-        const u = payload.new as AppNotification
-        setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
-           })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, payload => {
-        const u = payload.new as AppNotification
-        setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
-     })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
+        event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}`,
       }, payload => {
         const u = payload.new as AppNotification
         setNotifications(prev => prev.map(x => (x.id === u.id ? { ...x, ...u } : x)))
       })
       .subscribe()
     return () => { void supabase.removeChannel(channel) }
-  }, [user])
-    return { notifications, unreadCount, loading, markRead, markAllRead, deleteNotification }
+  }, [user, setNotifications])
+
+  return { notifications, unreadCount, loading, markRead, markAllRead, deleteNotification }
 }
 
 // Helper: send a group reply notification to the post author

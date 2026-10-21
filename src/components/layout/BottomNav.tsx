@@ -18,7 +18,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-30 backdrop-blur-xl border-t safe-area-pb"
-      style={{ backgroundColor: 'rgba(8,10,13,0.97)', borderColor: '#1F2933' }}
+      style={{ backgroundColor: 'var(--k-bg, #080A0D)', borderColor: 'var(--k-line, #1F2933)' }}
     >
       <div className="flex items-center justify-around px-2 py-2">
         {TABS.map(({ icon: Icon, label, path }) => {
@@ -35,35 +35,35 @@ export default function BottomNav() {
                 <div
                   className="w-12 h-12 -mt-6 rounded-2xl flex items-center justify-center shadow-lg"
                   style={{
-                    background: 'linear-gradient(135deg, #7C3AED 0%, #06B6D4 55%, #EC4899 100%)',
-                    boxShadow: '0 4px 24px rgba(124,58,237,0.5)',
+                    background: 'var(--k-accent, #FF7A1A)',
+                    boxShadow: '0 4px 24px rgba(255,122,26,0.4)',
                   }}
                 >
-                  <Icon size={24} className="text-white" />
+                  <Icon size={24} style={{ color: 'var(--k-on-accent, #1A0B05)' }} />
                 </div>
               ) : (
                 <>
                   <div className="relative">
                    {path === '/inbox' && unread > 0 && (
-                      <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ background: 'var(--k-accent, #FF7A1A)', color: 'var(--k-on-accent, #1A0B05)' }}>
                         {unread > 99 ? '99+' : unread}
                       </span>
                     )}
                     <Icon
                       size={22}
-                      style={{ color: active ? '#a78bfa' : 'rgba(255,255,255,0.38)' }}
+                      style={{ color: active ? 'var(--k-accent, #FF7A1A)' : 'var(--k-muted, rgba(255,255,255,0.5))' }}
                     />
                     {/* active dot */}
                     {active && (
                       <span
                         className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                        style={{ background: '#7C3AED' }}
+                        style={{ background: 'var(--k-accent, #FF7A1A)' }}
                       />
                     )}
                   </div>
                   <span
                     className="text-[10px] font-medium"
-                    style={{ color: active ? '#a78bfa' : 'rgba(255,255,255,0.38)' }}
+                    style={{ color: active ? 'var(--k-accent, #FF7A1A)' : 'var(--k-muted, rgba(255,255,255,0.5))' }}
                   >
                     {label}
                   </span>

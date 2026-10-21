@@ -23,8 +23,8 @@ function km(a: LL, b: LL) {
 }
 const estimate = (d: number) => Math.max(500, Math.round((600 + 120 * d) / 50) * 50)
 
-const WARM = 'linear-gradient(135deg,#FF8A3D,#8B5CF6)'
-const CARD = { background: '#100D14', border: '1px solid rgba(255,255,255,0.08)' }
+const WARM = 'var(--k-accent)'
+const CARD = { background: 'var(--k-surface)', border: '1px solid var(--k-line)' }
 const FIELD = 'w-full h-12 rounded-2xl pl-11 pr-4 text-[15px] text-white placeholder:text-white/35 outline-none transition-colors disabled:opacity-60'
 const vehicleIcon = (v: string) => /car|van|truck|bus/i.test(v) ? '🚗' : /bi(cycle|ke)/i.test(v) && !/motor/i.test(v) ? '🚲' : '🏍️'
 
@@ -140,7 +140,7 @@ export default function RequestRider() {
   const postLabel = `Post delivery request · ${naira(price)}`
 
   return (
-    <div className={`min-h-screen ${desk ? 'pb-10' : 'pb-44'}`} style={{ background: '#09070B' }}>
+    <div className={`min-h-screen ${desk ? 'pb-10' : 'pb-44'}`} style={{ background: 'var(--k-bg)' }}>
       <div className="max-w-[1180px] mx-auto px-4 pt-4">
 
         <div className="flex items-center gap-3 mb-4">
@@ -174,7 +174,7 @@ export default function RequestRider() {
               <p className="text-white font-bold text-[15px] mb-3">Where to?</p>
               <div className="relative">
                 {/* connector between the two dots */}
-                <span aria-hidden className="absolute left-[21px] top-[34px] h-[44px] w-px" style={{ background: 'rgba(255,255,255,0.18)' }} />
+                <span aria-hidden className="absolute left-[21px] top-[34px] h-[44px] w-px" style={{ background: 'var(--k-line2)' }} />
                 <div className="space-y-2.5">
                   <div className="relative">
                     <span aria-hidden className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full z-10 pointer-events-none" style={{ background: '#FF8A3D' }} />
@@ -189,7 +189,7 @@ export default function RequestRider() {
                     {!jobId && (
                       <button type="button" onClick={locateMe} aria-label="Use my current location"
                         className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
-                        style={{ color: '#FF9A4D', background: 'rgba(255,138,61,0.12)' }}>
+                        style={{ color: 'var(--k-accent)', background: 'var(--k-accent-soft)' }}>
                         <LocateFixed size={16} />
                       </button>
                     )}
@@ -207,7 +207,7 @@ export default function RequestRider() {
                     {!jobId && (
                       <button type="button" onClick={swap} aria-label="Swap pickup and drop-off"
                         className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
-                        style={{ color: '#C9C1CC', background: 'rgba(255,255,255,0.06)' }}>
+                        style={{ color: 'var(--k-muted)', background: 'var(--k-surface2)' }}>
                         <ArrowUpDown size={16} />
                       </button>
                     )}
@@ -217,7 +217,7 @@ export default function RequestRider() {
 
               <input
                 className="w-full h-12 rounded-2xl px-4 mt-2.5 text-[15px] text-white placeholder:text-white/35 outline-none disabled:opacity-60"
-                style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.08)' }}
+                style={{ background: 'var(--k-surface2)', border: '1px solid var(--k-line)' }}
                 placeholder="What are you sending? (optional)"
                 value={item} onChange={e => setItem(e.target.value)} disabled={!!jobId}
               />
@@ -235,16 +235,16 @@ export default function RequestRider() {
                 <div className="flex items-center justify-center gap-5 mt-3">
                   <button disabled={!!jobId} onClick={() => change(-100)} aria-label="Lower the price by 100 naira"
                     className="w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-transform active:scale-90"
-                    style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.12)' }}><Minus size={20} /></button>
-                  <p className="font-mono text-4xl font-bold tabular-nums" style={{ color: '#FF9A4D' }}>{naira(price)}</p>
+                    style={{ background: 'var(--k-surface2)', border: '1px solid var(--k-line2)' }}><Minus size={20} /></button>
+                  <p className="font-mono text-4xl font-bold tabular-nums" style={{ color: 'var(--k-accent)' }}>{naira(price)}</p>
                   <button disabled={!!jobId} onClick={() => change(100)} aria-label="Raise the price by 100 naira"
                     className="w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-transform active:scale-90"
-                    style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.12)' }}><Plus size={20} /></button>
+                    style={{ background: 'var(--k-surface2)', border: '1px solid var(--k-line2)' }}><Plus size={20} /></button>
                 </div>
                 <div className="flex items-center justify-center gap-2 mt-4">
                   {price !== fair && !jobId && (
                     <button onClick={() => setPrice(fair)} className="h-8 px-3.5 rounded-full text-xs font-bold"
-                      style={{ background: 'rgba(255,138,61,0.14)', color: '#FF9A4D' }}>Reset to {naira(fair)}</button>
+                      style={{ background: 'var(--k-accent-soft)', color: 'var(--k-accent)' }}>Reset to {naira(fair)}</button>
                   )}
                   {price > fair && !jobId && <span className="text-xs" style={{ color: '#34D399' }}>Higher offers get picked up faster</span>}
                 </div>
@@ -263,8 +263,8 @@ export default function RequestRider() {
                 const d = from && r.lat !== null && r.lng !== null ? km(from, { lat: r.lat, lng: r.lng }) : null
                 const picked = invited === r.id
                 return (
-                  <div key={r.id} className="flex items-center gap-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: '#17131B' }}>{vehicleIcon(r.vehicle_type)}</span>
+                  <div key={r.id} className="flex items-center gap-3 py-3" style={{ borderTop: '1px solid var(--k-line)' }}>
+                    <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: 'var(--k-surface2)' }}>{vehicleIcon(r.vehicle_type)}</span>
                     <div className="min-w-0 flex-1">
                       <p className="text-white text-sm font-bold truncate">{r.display_name || 'Rider'} <span className="font-medium capitalize" style={{ color: '#A59DA8' }}>· {r.vehicle_type}</span></p>
                       <p className="text-xs truncate" style={{ color: '#A59DA8' }}>
@@ -275,15 +275,15 @@ export default function RequestRider() {
                       <button onClick={() => setInvited(picked ? null : r.id)}
                         className="h-9 px-4 rounded-full text-[13px] font-bold shrink-0 flex items-center gap-1.5 transition-transform active:scale-95"
                         style={picked
-                          ? { background: WARM, color: '#fff' }
-                          : { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                          ? { background: WARM, color: 'var(--k-on-accent)' }
+                          : { background: 'transparent', color: 'var(--k-text)', border: '1px solid var(--k-line2)' }}>
                         {picked && <Check size={14} />}{picked ? 'Selected' : 'Choose'}
                       </button>
                     )}
                   </div>
                 )
               })}
-              {invited && <p className="text-xs mt-1" style={{ color: '#FF9A4D' }}>This rider will be notified. Other riders can still see the job.</p>}
+              {invited && <p className="text-xs mt-1" style={{ color: 'var(--k-accent)' }}>This rider will be notified. Other riders can still see the job.</p>}
             </div>
 
             {/* Offers after posting */}
@@ -296,9 +296,9 @@ export default function RequestRider() {
                   </p>
                 )}
                 {bids.map(b => (
-                  <div key={b.id} className="flex items-center justify-between py-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span className="font-mono text-lg font-bold" style={{ color: '#FF9A4D' }}>{naira(b.amount_kobo / 100)}</span>
-                    <button onClick={() => void chooseBid(b.id)} className="h-10 px-5 rounded-full text-white text-sm font-extrabold" style={{ background: WARM }}>Choose</button>
+                  <div key={b.id} className="flex items-center justify-between py-2.5" style={{ borderTop: '1px solid var(--k-line)' }}>
+                    <span className="font-mono text-lg font-bold" style={{ color: 'var(--k-accent)' }}>{naira(b.amount_kobo / 100)}</span>
+                    <button onClick={() => void chooseBid(b.id)} className="h-10 px-5 rounded-full text-sm font-extrabold" style={{ background: WARM, color: 'var(--k-on-accent)' }}>Choose</button>
                   </div>
                 ))}
               </div>
@@ -307,8 +307,8 @@ export default function RequestRider() {
             {/* Post button: inside the panel on wide screens */}
             {from && to && !jobId && desk && (
               <button onClick={() => void post()} disabled={posting}
-                className="flex w-full h-14 items-center justify-center gap-2 rounded-full text-white font-extrabold text-base disabled:opacity-60 transition-transform active:scale-[0.98]"
-                style={{ background: WARM, boxShadow: '0 10px 30px rgba(139,92,246,0.35)' }}>
+                className="flex w-full h-14 items-center justify-center gap-2 rounded-full font-extrabold text-base disabled:opacity-60 transition-transform active:scale-[0.98]"
+                style={{ background: WARM, color: 'var(--k-on-accent)' }}>
                 {posting && <Loader2 className="animate-spin" size={18} />} {postLabel}
               </button>
             )}
@@ -318,10 +318,10 @@ export default function RequestRider() {
 
       {/* Post button: bottom bar on phones, above the tab bar */}
       {from && to && !jobId && !desk && (
-        <div className="fixed inset-x-0 bottom-[68px] z-30 px-4 pb-3 pt-6" style={{ background: 'linear-gradient(to top, #09070B 60%, transparent)' }}>
+        <div className="fixed inset-x-0 bottom-[68px] z-30 px-4 pb-3 pt-6" style={{ background: 'linear-gradient(to top, var(--k-bg) 60%, transparent)' }}>
           <button onClick={() => void post()} disabled={posting}
-            className="w-full h-14 flex items-center justify-center gap-2 rounded-full text-white font-extrabold text-base disabled:opacity-60 active:scale-[0.98] transition-transform"
-            style={{ background: WARM, boxShadow: '0 10px 30px rgba(139,92,246,0.35)' }}>
+            className="w-full h-14 flex items-center justify-center gap-2 rounded-full font-extrabold text-base disabled:opacity-60 active:scale-[0.98] transition-transform"
+            style={{ background: WARM, color: 'var(--k-on-accent)' }}>
             {posting && <Loader2 className="animate-spin" size={18} />} {postLabel}
           </button>
         </div>

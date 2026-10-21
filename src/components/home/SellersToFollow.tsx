@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth'
 
 type Seller = { id: string; owner_id: string; name: string; logo_url: string | null; state: string | null }
 
-const TINTS = ['#C4561A', '#2A4B7A', '#1F7A4D']
 
 /** Right-rail card on wide screens: three sellers you don't follow yet, with a Follow button. */
 export default function SellersToFollow() {
@@ -39,23 +38,23 @@ export default function SellersToFollow() {
   }
 
   return (
-    <div className="rounded-3xl p-4" style={{ background: '#100D14', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <p className="text-[11px] font-bold tracking-[0.12em] mb-3.5" style={{ color: '#A59DA8' }}>SELLERS TO FOLLOW</p>
-      <div className="flex flex-col gap-3.5">
-        {list.map((s, i) => (
-          <div key={s.id} className="flex items-center gap-3">
+    <div>
+      <p className="text-[11px] font-bold tracking-[0.12em] mb-1.5" style={{ color: 'var(--k-muted)' }}>SELLERS TO FOLLOW</p>
+      <div className="flex flex-col">
+        {list.map(s => (
+          <div key={s.id} className="flex items-center gap-3 py-2">
             {s.logo_url
-              ? <img src={s.logo_url} alt="" className="w-10 h-10 rounded-full object-cover" />
-              : <span className="w-10 h-10 rounded-full shrink-0" style={{ background: TINTS[i % 3] }} />}
+              ? <img src={s.logo_url} alt="" className="w-9 h-9 rounded-full object-cover" />
+              : <span className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-extrabold" style={{ background: 'var(--k-surface2)', color: 'var(--k-text)' }}>{s.name[0]?.toUpperCase()}</span>}
             <div className="flex-1 min-w-0">
-              <p className="text-white text-[13px] font-bold truncate">{s.name}</p>
-              <p className="text-[11px] truncate" style={{ color: '#A59DA8' }}>{s.state ?? 'Seller'}</p>
+              <p className="text-[13px] font-bold truncate" style={{ color: 'var(--k-text)' }}>{s.name}</p>
+              <p className="text-[11px] truncate" style={{ color: 'var(--k-muted)' }}>{s.state ?? 'Seller'}</p>
             </div>
             <button
               onClick={() => void follow(s)}
               disabled={done.has(s.id)}
-              className="h-9 px-4 rounded-full text-[13px] font-bold text-white transition-transform active:scale-95"
-              style={{ background: done.has(s.id) ? 'rgba(255,255,255,0.06)' : 'transparent', border: '1px solid rgba(255,255,255,0.18)' }}
+              className="h-8 px-4 rounded-full text-xs font-bold transition-transform active:scale-95"
+              style={{ border: '1px solid var(--k-line2)', color: 'var(--k-text)', opacity: done.has(s.id) ? 0.7 : 1 }}
             >
               {done.has(s.id) ? 'Following' : 'Follow'}
             </button>
