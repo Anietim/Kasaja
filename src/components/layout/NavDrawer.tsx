@@ -15,7 +15,7 @@ interface Props {
   onClose: () => void
 }
 
-const SECTIONS = [
+export const SECTIONS = [
   {
     title: 'Browse',
     items: [
@@ -70,7 +70,7 @@ const SECTIONS = [
   },
 ]
 
-const ROLE_NAMES: Record<string, string> = {
+export const ROLE_NAMES: Record<string, string> = {
   buyer: 'Buyer', seller: 'Seller', independent: 'Independent Shopper', rider: 'Rider',
   admin: 'Admin', super_admin: 'Admin', investigation_admin: 'Admin',
 }

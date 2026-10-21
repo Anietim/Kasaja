@@ -50,6 +50,8 @@ export default function FlashDeals() {
   // Timer shows the soonest-ending deal.
   const { text, over } = useCountdown(deals[0]?.flash_expires_at ?? null)
   if (deals.length === 0 || over) return null
+  const list = deals
+  const clock = text
 
   return (
     <section className="pt-7">
@@ -58,32 +60,32 @@ export default function FlashDeals() {
           <h2 className="text-white text-xl font-extrabold tracking-tight">Flash deals</h2>
           <span className="font-mono text-[13px] px-2 py-1 rounded-lg tabular-nums"
             style={{ color: '#FF9A4D', border: '1px solid rgba(255,138,61,0.4)' }}
-            aria-label={`Next deal ends in ${text}`}>{text}</span>
+            aria-label={`Next deal ends in ${clock}`}>{clock}</span>
         </div>
         <button onClick={() => void navigate('/search?q=deals')} className="min-h-11 text-sm font-bold" style={{ color: '#FF9A4D' }}>See all</button>
       </div>
 
       <div className="flex gap-3 overflow-x-auto px-4 no-scrollbar">
-        {deals.map(d => {
+        {list.map(d => {
           const off = Math.round((1 - d.flash_price_kobo / d.price_kobo) * 100)
           return (
             <button key={d.id} onClick={() => void navigate(`/product/${d.id}`)}
               className="shrink-0 w-[200px] rounded-3xl overflow-hidden text-left transition-transform active:scale-[0.97]"
-              style={{ background: '#11151A', border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ background: '#100D14', border: '1px solid rgba(255,255,255,0.08)' }}>
               <div className="relative h-[150px]" style={{ background: 'rgba(255,255,255,0.04)' }}>
                 {d.images?.[0]
                   ? <img src={d.images[0]} alt={d.title} className="w-full h-full object-cover" loading="lazy" />
                   : <div className="w-full h-full flex items-center justify-center"><Package size={30} style={{ color: 'rgba(255,255,255,0.1)' }} /></div>}
                 {off > 0 && (
                   <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-xs font-extrabold"
-                    style={{ background: '#080A0D', color: '#FF9A4D' }}>-{off}%</span>
+                    style={{ background: '#09070B', color: '#FF9A4D' }}>-{off}%</span>
                 )}
               </div>
               <div className="p-3.5">
                 <p className="text-white text-[15px] font-bold line-clamp-1">{d.title}</p>
                 <div className="flex items-baseline gap-2 mt-1.5">
                   <span className="font-mono text-base tabular-nums text-white">{naira(d.flash_price_kobo)}</span>
-                  <span className="font-mono text-xs line-through" style={{ color: 'rgba(255,255,255,0.4)' }}>{naira(d.price_kobo)}</span>
+                  <span className="font-mono text-xs line-through" style={{ color: 'rgba(255,255,255,0.4)' }}>{d.price_kobo !== d.flash_price_kobo ? naira(d.price_kobo) : ''}</span>
                 </div>
               </div>
             </button>

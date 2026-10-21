@@ -13,6 +13,7 @@ import QuickLogin    from './pages/QuickLogin'
 import SecuritySetup from './pages/SecuritySetup'
 import Settings      from './pages/Settings'
 import Splash        from './pages/auth/Splash'
+import Landing from './pages/Landing'
 import Login         from './pages/Login'
 import AccountType   from './pages/AccountType'
 import Onboarding    from './pages/Onboarding'
@@ -94,7 +95,9 @@ export default function App() {
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* Auth flow */}
+          
           <Route path="/"                         element={<Splash />} />
+          <Route path="/welcome"                  element={<Landing />} />
           <Route path="/login"                    element={<Login />} />
           <Route path="/onboarding"               element={<Onboarding />} />
           <Route path="/onboard/account-type"     element={<AccountType />} />

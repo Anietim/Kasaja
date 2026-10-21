@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowLeft, Minus, Plus, Loader2 } from 'lucide-react'
+import { ArrowLeft, Minus, Plus, Loader2, ArrowUpDown, LocateFixed, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import RiderMap, { type MapPin } from '@/components/RiderMap'
 import AddressInput, { type Place } from '@/components/AddressInput'
+import { useDesk } from '@/hooks/useDesk'
 
 const LAGOS = { lat: 6.5244, lng: 3.3792 }
 const naira = (n: number) => `₦${n.toLocaleString('en-NG')}`
@@ -22,8 +23,26 @@ function km(a: LL, b: LL) {
 }
 const estimate = (d: number) => Math.max(500, Math.round((600 + 120 * d) / 50) * 50)
 
+const WARM = 'linear-gradient(135deg,#FF8A3D,#8B5CF6)'
+const CARD = { background: '#100D14', border: '1px solid rgba(255,255,255,0.08)' }
+const FIELD = 'w-full h-12 rounded-2xl pl-11 pr-4 text-[15px] text-white placeholder:text-white/35 outline-none transition-colors disabled:opacity-60'
+const vehicleIcon = (v: string) => /car|van|truck|bus/i.test(v) ? '🚗' : /bi(cycle|ke)/i.test(v) && !/motor/i.test(v) ? '🚲' : '🏍️'
+
+function useWide() {
+  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width:1700px)').matches)
+  useEffect(() => {
+    const q = window.matchMedia('(min-width:1700px)')
+    const on = () => setWide(q.matches)
+    q.addEventListener('change', on)
+    return () => q.removeEventListener('change', on)
+  }, [])
+  return wide
+}
+
 export default function RequestRider() {
   const navigate = useNavigate()
+  const wide = useWide()
+  const desk = useDesk()
   const [pickup, setPickup] = useState('')
   const [dropoff, setDropoff] = useState('')
   const [item, setItem] = useState('')
@@ -85,6 +104,23 @@ export default function RequestRider() {
     void navigate(`/delivery/${jobId}`)
   }
 
+  function locateMe() {
+    if (!navigator.geolocation) { toast.error('Location is not available on this device'); return }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const p: Place = { text: 'My current location', lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setPickup(p.text); setFrom(p)
+      },
+      () => toast.error('Allow location access to use your current location'),
+      { enableHighAccuracy: true, timeout: 8000 },
+    )
+  }
+
+  function swap() {
+    setPickup(dropoff); setDropoff(pickup)
+    setFrom(to); setTo(from)
+  }
+
   const change = (d: number) => setPrice(p => Math.min(50000, Math.max(300, p + d)))
   const ranked = [...riders].sort((a, b) => {
     if (!from) return 0
@@ -98,76 +134,195 @@ export default function RequestRider() {
     ...riders.filter(r => r.lat !== null && r.lng !== null).map(r => ({ id: r.id, lat: r.lat as number, lng: r.lng as number, kind: 'rider' as const, label: r.display_name ?? 'Rider' })),
   ]
 
+  const dist = from && to ? km(from, to) : null
+  const fair = dist !== null ? estimate(dist) : null
+
+  const postLabel = `Post delivery request · ${naira(price)}`
+
   return (
-    <div className="min-h-screen bg-canvas pb-32">
-      <div className="sticky top-0 z-20 bg-canvas/90 backdrop-blur border-b border-surface-800 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => void navigate(-1)} className="p-2 rounded-lg hover:bg-surface-800"><ArrowLeft className="w-5 h-5 text-white" /></button>
-        <h1 className="font-bold text-white">Request a rider</h1>
-      </div>
+    <div className={`min-h-screen ${desk ? 'pb-10' : 'pb-44'}`} style={{ background: '#09070B' }}>
+      <div className="max-w-[1180px] mx-auto px-4 pt-4">
 
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
-        <RiderMap center={from ?? LAGOS} pins={pins} height={300} />
-
-        <div className="bg-surface-900 rounded-2xl p-4 space-y-2">
-          <AddressInput value={pickup} onChange={v => { setPickup(v); setFrom(null) }} onPick={setFrom} placeholder="Pickup address" disabled={!!jobId} />
-          <AddressInput value={dropoff} onChange={v => { setDropoff(v); setTo(null) }} onPick={setTo} placeholder="Drop-off address" disabled={!!jobId} />
-          <input className="w-full bg-surface-800 rounded-xl px-4 py-3 text-white placeholder-neutral-500" placeholder="What are you sending? (optional)" value={item} onChange={e => setItem(e.target.value)} disabled={!!jobId} />
-          {!(from && to) && <p className="text-xs text-neutral-500">Type an address and pick it from the suggestions.</p>}
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => void navigate(-1)} aria-label="Back"
+            className="w-11 h-11 rounded-full flex items-center justify-center" style={CARD}>
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          <div>
+            <h1 className="text-white text-xl font-extrabold tracking-tight leading-tight">Request a rider</h1>
+            <p className="text-xs" style={{ color: '#A59DA8' }}>Send a package anywhere in Lagos. You set the price.</p>
+          </div>
         </div>
 
-        {from && to && (
-          <div className="bg-surface-900 rounded-2xl p-4 text-center">
-            <p className="text-xs text-neutral-500">Estimated bill for {km(from, to).toFixed(1)} km</p>
-            <div className="flex items-center justify-center gap-5 mt-2">
-              <button disabled={!!jobId} onClick={() => change(-100)} className="w-12 h-12 rounded-full bg-surface-800 text-white flex items-center justify-center disabled:opacity-40"><Minus /></button>
-              <p className="text-3xl font-bold text-brand-400">{naira(price)}</p>
-              <button disabled={!!jobId} onClick={() => change(100)} className="w-12 h-12 rounded-full bg-surface-800 text-white flex items-center justify-center disabled:opacity-40"><Plus /></button>
+        <div className="min-[1700px]:grid min-[1700px]:grid-cols-[minmax(0,1fr)_420px] min-[1700px]:gap-6 space-y-4 min-[1700px]:space-y-0">
+
+          {/* Map */}
+          <div className="min-[1700px]:sticky min-[1700px]:top-4 min-[1700px]:self-start">
+            <RiderMap center={from ?? LAGOS} pins={pins} height={wide ? 620 : 340} controls="full" />
+            <div className="flex items-center gap-4 mt-3 px-1 text-xs" style={{ color: '#A59DA8' }}>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> Pickup</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-600" /> Drop-off</span>
+              <span className="flex items-center gap-1.5"><span>🏍️</span> Riders online</span>
             </div>
-            <p className="text-xs text-neutral-500 mt-2">An estimate. Riders can accept your price or send their own.</p>
           </div>
-        )}
 
-        <div className="bg-surface-900 rounded-2xl p-4">
-          <p className="text-white font-semibold text-sm mb-1">Riders online ({ranked.length})</p>
-          {ranked.length === 0 && <p className="text-xs text-neutral-500">No riders are online right now. You can still post the request.</p>}
-          {ranked.map(r => {
-            const d = from && r.lat !== null && r.lng !== null ? km(from, { lat: r.lat, lng: r.lng }) : null
-            return (
-              <div key={r.id} className="flex items-center justify-between gap-2 py-2 border-t border-surface-800 text-sm">
-                <div className="min-w-0">
-                  <p className="text-white truncate">{r.display_name || 'Rider'} <span className="text-neutral-500 capitalize">· {r.vehicle_type}</span></p>
-                  <p className="text-xs text-neutral-500">{d !== null ? `${d.toFixed(1)} km from pickup` : (r.work_area || 'Location not shared')} · ★ {Number(r.avg_rating || 0).toFixed(1)}</p>
+          {/* Panel */}
+          <div className="space-y-4">
+
+            {/* Route */}
+            <div className="rounded-3xl p-4" style={CARD}>
+              <p className="text-white font-bold text-[15px] mb-3">Where to?</p>
+              <div className="relative">
+                {/* connector between the two dots */}
+                <span aria-hidden className="absolute left-[21px] top-[34px] h-[44px] w-px" style={{ background: 'rgba(255,255,255,0.18)' }} />
+                <div className="space-y-2.5">
+                  <div className="relative">
+                    <span aria-hidden className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full z-10 pointer-events-none" style={{ background: '#FF8A3D' }} />
+                    <AddressInput
+                      value={pickup}
+                      onChange={v => { setPickup(v); setFrom(null) }}
+                      onPick={setFrom}
+                      placeholder="Pickup address"
+                      disabled={!!jobId}
+                      inputClassName={FIELD + ' pr-12'}
+                    />
+                    {!jobId && (
+                      <button type="button" onClick={locateMe} aria-label="Use my current location"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
+                        style={{ color: '#FF9A4D', background: 'rgba(255,138,61,0.12)' }}>
+                        <LocateFixed size={16} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span aria-hidden className="absolute left-4 top-1/2 -translate-y-1/2 w-3 h-3 rounded-[3px] z-10 pointer-events-none" style={{ background: '#16A34A' }} />
+                    <AddressInput
+                      value={dropoff}
+                      onChange={v => { setDropoff(v); setTo(null) }}
+                      onPick={setTo}
+                      placeholder="Drop-off address"
+                      disabled={!!jobId}
+                      inputClassName={FIELD + ' pr-12'}
+                    />
+                    {!jobId && (
+                      <button type="button" onClick={swap} aria-label="Swap pickup and drop-off"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center z-10"
+                        style={{ color: '#C9C1CC', background: 'rgba(255,255,255,0.06)' }}>
+                        <ArrowUpDown size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {!jobId && (
-                  <button onClick={() => setInvited(invited === r.id ? null : r.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 ${invited === r.id ? 'bg-brand-500 text-white' : 'bg-surface-800 text-white'}`}>
-                    {invited === r.id ? 'Selected' : 'Choose rider'}
-                  </button>
-                )}
               </div>
-            )
-          })}
-          {invited && <p className="text-xs text-brand-400 mt-2">This rider will be notified. Other riders can still see the job.</p>}
-        </div>
 
-        {jobId && (
-          <div className="bg-surface-900 rounded-2xl p-4">
-            <p className="text-white font-semibold text-sm mb-2">Rider offers ({bids.length})</p>
-            {bids.length === 0 && <p className="text-xs text-neutral-500">Waiting for riders to accept or send a price…</p>}
-            {bids.map(b => (
-              <div key={b.id} className="flex items-center justify-between py-2 border-t border-surface-800">
-                <span className="text-brand-400 font-bold">{naira(b.amount_kobo / 100)}</span>
-                <button onClick={() => void chooseBid(b.id)} className="px-4 py-1.5 rounded-xl bg-brand-500 text-white text-sm font-semibold">Choose</button>
+              <input
+                className="w-full h-12 rounded-2xl px-4 mt-2.5 text-[15px] text-white placeholder:text-white/35 outline-none disabled:opacity-60"
+                style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.08)' }}
+                placeholder="What are you sending? (optional)"
+                value={item} onChange={e => setItem(e.target.value)} disabled={!!jobId}
+              />
+              {!(from && to) && (
+                <p className="text-xs mt-2.5" style={{ color: '#A59DA8' }}>
+                  Type an address and pick it from the suggestions, or tap the target button to use where you are.
+                </p>
+              )}
+            </div>
+
+            {/* Price */}
+            {from && to && dist !== null && fair !== null && (
+              <div className="rounded-3xl p-5 text-center" style={CARD}>
+                <p className="text-xs font-semibold tracking-wide" style={{ color: '#A59DA8' }}>ESTIMATED BILL · {dist.toFixed(1)} KM</p>
+                <div className="flex items-center justify-center gap-5 mt-3">
+                  <button disabled={!!jobId} onClick={() => change(-100)} aria-label="Lower the price by 100 naira"
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-transform active:scale-90"
+                    style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.12)' }}><Minus size={20} /></button>
+                  <p className="font-mono text-4xl font-bold tabular-nums" style={{ color: '#FF9A4D' }}>{naira(price)}</p>
+                  <button disabled={!!jobId} onClick={() => change(100)} aria-label="Raise the price by 100 naira"
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-40 transition-transform active:scale-90"
+                    style={{ background: '#17131B', border: '1px solid rgba(255,255,255,0.12)' }}><Plus size={20} /></button>
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {price !== fair && !jobId && (
+                    <button onClick={() => setPrice(fair)} className="h-8 px-3.5 rounded-full text-xs font-bold"
+                      style={{ background: 'rgba(255,138,61,0.14)', color: '#FF9A4D' }}>Reset to {naira(fair)}</button>
+                  )}
+                  {price > fair && !jobId && <span className="text-xs" style={{ color: '#34D399' }}>Higher offers get picked up faster</span>}
+                </div>
+                <p className="text-xs mt-3" style={{ color: '#A59DA8' }}>An estimate. Riders can accept your price or send their own.</p>
               </div>
-            ))}
+            )}
+
+            {/* Riders */}
+            <div className="rounded-3xl p-4" style={CARD}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-white font-bold text-[15px]">Riders online</p>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: 'rgba(52,211,153,0.14)', color: '#34D399' }}>{ranked.length}</span>
+              </div>
+              {ranked.length === 0 && <p className="text-xs pt-2" style={{ color: '#A59DA8' }}>No riders are online right now. You can still post the request.</p>}
+              {ranked.map(r => {
+                const d = from && r.lat !== null && r.lng !== null ? km(from, { lat: r.lat, lng: r.lng }) : null
+                const picked = invited === r.id
+                return (
+                  <div key={r.id} className="flex items-center gap-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: '#17131B' }}>{vehicleIcon(r.vehicle_type)}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-white text-sm font-bold truncate">{r.display_name || 'Rider'} <span className="font-medium capitalize" style={{ color: '#A59DA8' }}>· {r.vehicle_type}</span></p>
+                      <p className="text-xs truncate" style={{ color: '#A59DA8' }}>
+                        {d !== null ? `${d.toFixed(1)} km from pickup` : (r.work_area || 'Location not shared')} · ★ {Number(r.avg_rating || 0).toFixed(1)}
+                      </p>
+                    </div>
+                    {!jobId && (
+                      <button onClick={() => setInvited(picked ? null : r.id)}
+                        className="h-9 px-4 rounded-full text-[13px] font-bold shrink-0 flex items-center gap-1.5 transition-transform active:scale-95"
+                        style={picked
+                          ? { background: WARM, color: '#fff' }
+                          : { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        {picked && <Check size={14} />}{picked ? 'Selected' : 'Choose'}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+              {invited && <p className="text-xs mt-1" style={{ color: '#FF9A4D' }}>This rider will be notified. Other riders can still see the job.</p>}
+            </div>
+
+            {/* Offers after posting */}
+            {jobId && (
+              <div className="rounded-3xl p-4" style={CARD}>
+                <p className="text-white font-bold text-[15px] mb-2">Rider offers ({bids.length})</p>
+                {bids.length === 0 && (
+                  <p className="text-xs flex items-center gap-2" style={{ color: '#A59DA8' }}>
+                    <Loader2 className="animate-spin" size={14} /> Waiting for riders to accept or send a price…
+                  </p>
+                )}
+                {bids.map(b => (
+                  <div key={b.id} className="flex items-center justify-between py-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="font-mono text-lg font-bold" style={{ color: '#FF9A4D' }}>{naira(b.amount_kobo / 100)}</span>
+                    <button onClick={() => void chooseBid(b.id)} className="h-10 px-5 rounded-full text-white text-sm font-extrabold" style={{ background: WARM }}>Choose</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Post button: inside the panel on wide screens */}
+            {from && to && !jobId && desk && (
+              <button onClick={() => void post()} disabled={posting}
+                className="flex w-full h-14 items-center justify-center gap-2 rounded-full text-white font-extrabold text-base disabled:opacity-60 transition-transform active:scale-[0.98]"
+                style={{ background: WARM, boxShadow: '0 10px 30px rgba(139,92,246,0.35)' }}>
+                {posting && <Loader2 className="animate-spin" size={18} />} {postLabel}
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {from && to && !jobId && (
-        <div className="fixed bottom-0 inset-x-0 bg-canvas/95 border-t border-surface-800 px-4 py-3">
-          <button onClick={() => void post()} disabled={posting} className="w-full max-w-lg mx-auto flex items-center justify-center gap-2 bg-brand-500 text-white font-semibold py-3.5 rounded-xl disabled:opacity-60">
-            {posting && <Loader2 className="animate-spin" size={16} />} Post delivery request · {naira(price)}
+      {/* Post button: bottom bar on phones, above the tab bar */}
+      {from && to && !jobId && !desk && (
+        <div className="fixed inset-x-0 bottom-[68px] z-30 px-4 pb-3 pt-6" style={{ background: 'linear-gradient(to top, #09070B 60%, transparent)' }}>
+          <button onClick={() => void post()} disabled={posting}
+            className="w-full h-14 flex items-center justify-center gap-2 rounded-full text-white font-extrabold text-base disabled:opacity-60 active:scale-[0.98] transition-transform"
+            style={{ background: WARM, boxShadow: '0 10px 30px rgba(139,92,246,0.35)' }}>
+            {posting && <Loader2 className="animate-spin" size={18} />} {postLabel}
           </button>
         </div>
       )}
