@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Map, { Marker, NavigationControl, Source, Layer, type MapRef } from 'react-map-gl/mapbox'
-import { Plus, Minus, LocateFixed, Maximize2 } from 'lucide-react'
+import { Plus, Minus, LocateFixed, Maximize2, Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
@@ -13,8 +14,8 @@ export interface MapPin {
   label?: string
 }
 
-const BTN = 'w-10 h-10 rounded-full flex items-center justify-center text-white transition-transform active:scale-90 backdrop-blur'
-const BTN_STYLE = { background: 'rgba(9,7,11,0.78)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 6px 18px rgba(0,0,0,0.35)' }
+const BTN = 'w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90 backdrop-blur'
+const BTN_STYLE = { background: 'var(--k-surface, rgba(9,7,11,0.78))', color: 'var(--k-text, #fff)', border: '1px solid var(--k-line2, rgba(255,255,255,0.14))', boxShadow: '0 6px 18px rgba(0,0,0,0.35)' }
 
 export default function RiderMap({
   center, pins, onMapClick, height = 300, fit = true, controls = 'basic',
@@ -28,6 +29,7 @@ export default function RiderMap({
   controls?: 'basic' | 'full'
 }) {
   const ref = useRef<MapRef>(null)
+  const { theme, toggle: toggleTheme } = useTheme()
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null)
   const signature = pins.map(p => `${p.id}:${p.lat.toFixed(4)},${p.lng.toFixed(4)}`).join('|')
 
@@ -109,7 +111,7 @@ export default function RiderMap({
         ref={ref}
         mapboxAccessToken={TOKEN}
         initialViewState={{ latitude: center.lat, longitude: center.lng, zoom: 12 }}
-        mapStyle="mapbox://styles/mapbox/streets-v12"
+        mapStyle={theme === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/streets-v12'}
         style={{ width: '100%', height: '100%' }}
         onClick={e => onMapClick?.(e.lngLat.lat, e.lngLat.lng)}
       >
@@ -131,11 +133,19 @@ export default function RiderMap({
         ))}
       </Map>
 
+      {controls === 'basic' && (
+        <button type="button" aria-label={theme === 'dark' ? 'Light map' : 'Dark map'} className={`absolute top-3 left-3 ${BTN}`} style={BTN_STYLE} onClick={toggleTheme}>
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
+      )}
       {controls === 'full' && (
         <div className="absolute top-3 right-3 flex flex-col gap-2">
           <button type="button" aria-label="Zoom in" className={BTN} style={BTN_STYLE} onClick={() => ref.current?.zoomIn({ duration: 200 })}><Plus size={18} /></button>
           <button type="button" aria-label="Zoom out" className={BTN} style={BTN_STYLE} onClick={() => ref.current?.zoomOut({ duration: 200 })}><Minus size={18} /></button>
-          <button type="button" aria-label="Show my location" className={BTN} style={{ ...BTN_STYLE, color: '#FF9A4D' }} onClick={locate}><LocateFixed size={18} /></button>
+          <button type="button" aria-label="Show my location" className={BTN} style={{ ...BTN_STYLE, color: 'var(--k-accent, #FF9A4D)' }} onClick={locate}><LocateFixed size={18} /></button>
+          <button type="button" aria-label={theme === 'dark' ? 'Light map' : 'Dark map'} className={BTN} style={BTN_STYLE} onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
           {pins.length > 0 && (
             <button type="button" aria-label="Show everything on the map" className={BTN} style={BTN_STYLE} onClick={fitAll}><Maximize2 size={16} /></button>
           )}

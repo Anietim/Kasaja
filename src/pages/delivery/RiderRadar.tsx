@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from '@/hooks/useTheme'
 import Map, { Marker, Popup } from 'react-map-gl/mapbox'
 import { Bike, X, MessageCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -11,6 +12,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
 
 export default function RiderRadar() {
   const navigate  = useNavigate()
+  const { theme } = useTheme()
   const { user }  = useAuth()
   const [riders,   setRiders]   = useState<RiderLocation[]>([])
   const [selected, setSelected] = useState<RiderLocation | null>(null)
@@ -61,7 +63,7 @@ export default function RiderRadar() {
         mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={viewport}
         onMove={(e: { viewState: { latitude: number; longitude: number; zoom: number } }) => setViewport(e.viewState)}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle={theme === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/streets-v12'}
         style={{ width: '100%', height: '100%' }}
       >
         {riders.map(r => (

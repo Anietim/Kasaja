@@ -5,6 +5,7 @@ import { SECTIONS, ROLE_NAMES } from '@/components/layout/NavDrawer'
 import { useAuth } from '@/hooks/useAuth'
 import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 import { useTheme } from '@/hooks/useTheme'
+import { useNewFeed } from '@/hooks/useNewFeed'
 import { initials } from '@/lib/utils'
 
 /** The whole user menu, pinned on the left of computer screens. Same role rules as the phone menu. */
@@ -13,6 +14,7 @@ export default function DesktopSidebar() {
   const { profile } = useAuth()
   const unread = useUnreadMessages()
   const { theme, toggle } = useTheme()
+  const newItems = useNewFeed()
 
   const roles: string[] = profile?.roles ?? []
   const isAdmin = roles.some(r => ['admin', 'investigation_admin', 'super_admin'].includes(r))
@@ -75,6 +77,13 @@ export default function DesktopSidebar() {
               >
                 <Icon size={17} className="shrink-0" />
                 <span className="flex-1 truncate">{label}</span>
+                {path === '/home' && newItems > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center"
+                    style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}
+                    aria-label={`${newItems} new listings`}>
+                    {newItems > 99 ? '99+' : newItems}
+                  </span>
+                )}
                 {path === '/inbox' && unread > 0 && (
                   <span className="min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-extrabold flex items-center justify-center"
                     style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>

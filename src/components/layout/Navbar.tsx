@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, SlidersHorizontal, Menu, X } from 'lucide-react'
+import { Bell, SlidersHorizontal, Menu, X, LayoutGrid } from 'lucide-react'
+import MobilePanel from './MobilePanel'
 import NavDrawer from './NavDrawer'
 import NotificationCenter from '@/components/NotificationCenter'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -11,6 +12,7 @@ export default function Navbar() {
   const [query, setQuery]    = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [notifsOpen, setNotifsOpen] = useState(false)
+  const [panelOpen, setPanelOpen] = useState(false)
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -72,7 +74,16 @@ export default function Navbar() {
             </div>
           </form>
 
-          {/* Right — bell only */}
+          {/* Right — Discover panel (order tracker, groups, who to follow) + bell */}
+          <button
+            onClick={() => setPanelOpen(true)}
+            aria-label="Discover: order tracker, market groups, who to follow"
+            className="p-2 text-white/40 hover:text-white transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            style={{ color: 'var(--k-muted)' }}
+          >
+            <LayoutGrid size={20} />
+          </button>
+
           <button
             onClick={() => setNotifsOpen(true)}
             className="relative p-2 text-white/40 hover:text-white transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -90,6 +101,7 @@ export default function Navbar() {
         </div>
       </header>
 
+      <MobilePanel open={panelOpen} onClose={() => setPanelOpen(false)} />
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <NotificationCenter open={notifsOpen} onClose={() => setNotifsOpen(false)} />
     </>

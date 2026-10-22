@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  X, Home, Map, Users, MessageSquare, Package, Store, Bike,
+  X, Plus, Moon, Sun, Home, Map, Users, MessageSquare, Package, Store, Bike,
   ShieldAlert, User, PlusCircle, Truck, Wallet, AlertTriangle,
   Search, Settings, TrendingUp, BarChart2, Shield, ShieldCheck, Gift, Video,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { initials } from '@/lib/utils'
+import { useTheme } from '@/hooks/useTheme'
+import '@/styles/kasaja-theme.css'
 
 interface Props {
   open: boolean
@@ -79,6 +81,7 @@ export default function NavDrawer({ open, onClose }: Props) {
   const navigate        = useNavigate()
   const { profile, user } = useAuth()
   const [storeName, setStoreName] = useState<string | null>(null)
+  const { theme, toggle } = useTheme()
 
   // Sellers see their store name; everyone else sees their own name
   useEffect(() => {
@@ -127,99 +130,85 @@ export default function NavDrawer({ open, onClose }: Props) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed top-0 left-0 bottom-0 z-50 w-72 overflow-y-auto flex flex-col"
-            style={{ background: '#0C0F14', borderRight: '1px solid rgba(255,255,255,0.06)' }}
+            className="fixed top-0 left-0 bottom-0 z-50 w-[19.5rem] max-w-[88vw] flex flex-col"
+            style={{ background: 'var(--k-bg)', borderRight: '1px solid var(--k-line)' }}
           >
-            {/* Profile card at top */}
-            <div
-              className="px-5 pt-6 pb-5 cursor-pointer"
-              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-              onClick={() => go('/profile')}
-            >
-              <div className="flex items-center gap-3">
-                {/* Avatar */}
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-base font-bold shrink-0 overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg,#7C3AED,#06B6D4)',
-                    color: '#fff',
-                    fontFamily: 'DM Sans, sans-serif',
-                  }}
-                >
-                  {profile?.avatar_url
-                    ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                    : initials(profile?.display_name || 'U')}
-                </div>
-
-                {/* KASAJA wordmark (top, next to the photo) */}
-                <div className="flex-1 min-w-0">
-                  <span
-                    className="font-display font-black gradient-text select-none"
-                    style={{ fontSize: '1.4rem', letterSpacing: '-0.04em', fontWeight: 900 }}
-                  >
-                    KASAJA
-                  </span>
-                  <p className="text-white/40 text-xs mt-0.5 truncate">
-                    Tap to view profile
-                  </p>
-                </div>
-
-                {/* Chevron */}
-                <div className="text-white/20 text-xs">›</div>
-              </div>
-
-              {/* User name or store name */}
-              <div className="mt-4">
-                <p
-                  className="text-white font-semibold text-base truncate"
-                  style={{ fontFamily: 'DM Sans, sans-serif' }}
-                >
-                  {displayTitle}
-                </p>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {Array.from(new Set(roles.map(r => ROLE_NAMES[r]).filter(Boolean))).map(n => (
-                    <span key={n} className="text-[11px] px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400">{n}</span>
-                  ))}
-                </div>
-              </div>
+            {/* Logo + close */}
+            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3 shrink-0">
+              <img src="/logo-mark.svg" alt="" className="w-9 h-9 rounded-[10px]" />
+              <span className="font-extrabold tracking-[0.18em] text-sm flex-1" style={{ color: 'var(--k-text)' }}>KASAJA</span>
+              <button onClick={onClose} aria-label="Close menu" className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--k-surface2)', color: 'var(--k-muted)' }}>
+                <X size={16} />
+              </button>
             </div>
 
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-5 right-4 w-8 h-8 rounded-xl flex items-center justify-center transition"
-              style={{ background: 'rgba(255,255,255,0.05)' }}
-            >
-              <X size={16} className="text-white/40" />
+            {/* Profile */}
+            <button onClick={() => go('/profile')} className="mx-3 mb-2 p-2 rounded-2xl text-left flex items-center gap-3 shrink-0">
+              <span className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0 overflow-hidden"
+                style={{ background: 'var(--k-surface2)', color: 'var(--k-text)' }}>
+                {profile?.avatar_url
+                  ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : initials(profile?.display_name || 'U')}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold truncate" style={{ color: 'var(--k-text)' }}>{displayTitle}</span>
+                <span className="block text-xs truncate" style={{ color: 'var(--k-muted)' }}>
+                  {Array.from(new Set(roles.map(r => ROLE_NAMES[r]).filter(Boolean))).slice(0, 2).join(' · ') || 'View profile'}
+                </span>
+              </span>
             </button>
 
+            {(roles.includes('seller') || roles.includes('independent')) && (
+              <button onClick={() => go('/sell')} className="mx-4 mb-2 h-11 rounded-xl text-sm font-extrabold flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-transform"
+                style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>
+                <Plus size={16} /> New listing
+              </button>
+            )}
+
             {/* Nav sections */}
-            <div className="py-4 flex-1">
-                 {SECTIONS.filter(s => canSee(s.title)).map(section => (
-                <div key={section.title} className="mb-3">
-                  <p
-                    className="text-[10px] font-semibold uppercase tracking-widest px-5 mb-1"
-                    style={{ color: 'rgba(255,255,255,0.25)' }}
-                  >
+            <div className="flex-1 overflow-y-auto no-scrollbar px-2.5 pb-3">
+              {SECTIONS.filter(s => canSee(s.title)).map(section => (
+                <div key={section.title} className="mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] px-3 pt-3 pb-1.5" style={{ color: 'var(--k-faint)' }}>
                     {section.title}
                   </p>
-                  {section.items.map(({ icon: Icon, label, path }) => (
-                    <button
-                      key={path}
-                      onClick={() => go(path)}
-                      className="w-full flex items-center gap-3 px-5 py-2.5 transition-colors text-left group"
-                      style={{ fontFamily: 'DM Sans, sans-serif' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(124,58,237,0.08)' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                    >
-                      <Icon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-                      <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                        {label}
-                      </span>
-                    </button>
-                  ))}
+                  {section.items.map(({ icon: Icon, label, path }) => {
+                    const on = path === '/home' && window.location.pathname.startsWith('/home')
+                    return (
+                      <button
+                        key={path + label}
+                        onClick={() => go(path)}
+                        className="w-full flex items-center gap-3.5 px-3 h-11 rounded-[10px] text-left text-sm"
+                        style={on
+                          ? { background: 'var(--k-accent-soft)', color: 'var(--k-accent)', fontWeight: 700 }
+                          : { color: 'var(--k-muted)', fontWeight: 500 }}
+                      >
+                        <Icon size={18} className="shrink-0" />
+                        <span className="truncate">{label}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               ))}
+            </div>
+
+            {/* Dark / light mood */}
+            <div className="shrink-0 px-4 py-3 pb-5 flex items-center justify-between" style={{ borderTop: '1px solid var(--k-line)' }}>
+              <span className="flex items-center gap-3 text-sm font-semibold" style={{ color: 'var(--k-muted)' }}>
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </span>
+              <button
+                onClick={toggle}
+                role="switch"
+                aria-checked={theme === 'light'}
+                aria-label="Switch between dark and light mode"
+                className="w-[46px] h-[26px] rounded-full relative"
+                style={{ background: theme === 'light' ? 'var(--k-accent)' : 'var(--k-surface2)', border: '1px solid var(--k-line2)' }}
+              >
+                <span className="absolute top-[3px] w-[18px] h-[18px] rounded-full transition-all"
+                  style={{ left: theme === 'light' ? 23 : 3, background: theme === 'light' ? 'var(--k-on-accent)' : 'var(--k-muted)' }} />
+              </button>
             </div>
           </motion.div>
         </>

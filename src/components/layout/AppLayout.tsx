@@ -5,9 +5,17 @@ import DesktopSidebar from './DesktopSidebar'
 import RightPanel from './RightPanel'
 import { useDesk } from '@/hooks/useDesk'
 import '@/styles/kasaja-theme.css'
+import { useEffect } from 'react'
+import { useNewFeed } from '@/hooks/useNewFeed'
 
 export default function AppLayout() {
   const desk = useDesk()
+  const newItems = useNewFeed(true)
+
+  // Like X: the browser tab shows how many new things are waiting, e.g. "(3) KASAJA"
+  useEffect(() => {
+    document.title = newItems > 0 ? `(${newItems > 99 ? '99+' : newItems}) KASAJA` : 'KASAJA'
+  }, [newItems])
 
   // Computer: a fixed screen. Menu on the left, page in the middle, search + extras on the right.
   // Each panel scrolls on its own and the layout never reflows when the browser is zoomed.

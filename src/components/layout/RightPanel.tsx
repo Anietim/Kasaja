@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import NotificationCenter from '@/components/NotificationCenter'
 import { useNotifications } from '@/hooks/useNotifications'
 import { useLiveOrder } from '@/hooks/useLiveOrder'
-import SellersToFollow from '@/components/home/SellersToFollow'
+import WhoToFollow from '@/components/home/WhoToFollow'
 import RiderBike from '@/components/layout/RiderBike'
 
 const LABEL = { color: 'var(--k-muted)' }
@@ -13,7 +13,7 @@ const LABEL = { color: 'var(--k-muted)' }
 /* ───────── Top 5 market groups ───────── */
 type Group = { id: string; name: string; member_count: number }
 
-function TopGroups() {
+export function TopGroups() {
   const navigate = useNavigate()
   const [groups, setGroups] = useState<Group[]>([])
 
@@ -68,7 +68,7 @@ function TopGroups() {
 }
 
 /* ───────── Bottom buttons ───────── */
-function OrderOnTheWayButton() {
+export function OrderOnTheWayButton() {
   const navigate = useNavigate()
   const o = useLiveOrder()
   const live = o.active
@@ -102,7 +102,7 @@ function OrderOnTheWayButton() {
 }
 
 /** Shown only while real flash deals are live. Hidden otherwise. */
-function FlashDealsButton() {
+export function FlashDealsButton() {
   const navigate = useNavigate()
   const [count, setCount] = useState(0)
   const [endsAt, setEndsAt] = useState<number | null>(null)
@@ -207,7 +207,7 @@ export default function RightPanel() {
       {/* Scrolling middle */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-6">
         <TopGroups />
-        <SellersToFollow />
+        <WhoToFollow />
       </div>
 
       {/* Pinned to the bottom */}

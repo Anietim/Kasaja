@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Home, Map, Plus, MessageSquare, Users } from 'lucide-react'
+import { Home, Map, Plus, Truck, MessageSquare, Users } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 
-const TABS = [
+const BASE = [
   { icon: Home,         label: 'Home',    path: '/home' },
   { icon: Map,          label: 'Markets', path: '/markets' },
   { icon: Plus,         label: 'Sell',    path: '/sell' },
@@ -11,6 +12,11 @@ const TABS = [
 ]
 
 export default function BottomNav() {
+  const { profile } = useAuth()
+  const roles: string[] = profile?.roles ?? []
+  const canSell = roles.includes('seller') || roles.includes('independent')
+  // Sellers list things; everyone else requests a rider
+  const TABS = BASE.map(t => t.path === '/sell' && !canSell ? { icon: Truck, label: 'Rider', path: '/request-rider' } : t)
   const unread = useUnreadMessages()
   const navigate = useNavigate()
   const location = useLocation()
@@ -23,7 +29,7 @@ export default function BottomNav() {
       <div className="flex items-center justify-around px-2 py-2">
         {TABS.map(({ icon: Icon, label, path }) => {
           const active = location.pathname.startsWith(path)
-          const isSell = path === '/sell'
+          const isSell = path === '/sell' || path === '/request-rider'
 
           return (
             <button

@@ -1,17 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Heart, Star, MapPin, Package, TrendingUp, Zap, Plus } from 'lucide-react'
+import { Heart, Star, MapPin, Package, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { MOCK } from '@/lib/mockData'
 import { StoryViewer } from '@/components/StoryViewer'
-import LiveOrderCard from '@/components/home/LiveOrderCard'
-import FlashDeals from '@/components/home/FlashDeals'
 import FollowingFeed from '@/components/home/FollowingFeed'
-import HomeGreeting from '@/components/home/HomeGreeting'
-import TrustCard from '@/components/home/TrustCard'
 import { useDesk } from '@/hooks/useDesk'
 import ScrollRow from '@/components/home/ScrollRow'
+import { ArrowUp } from 'lucide-react'
+import { useNewFeed, markFeedSeen } from '@/hooks/useNewFeed'
 
 interface Product {
   id: string; title: string; price_kobo: number; price_type: string
@@ -46,6 +44,8 @@ type StoryRow = { id: string; user_id: string; media_url: string; media_type: st
 export default function Home() {
   const navigate = useNavigate()
   const desk = useDesk()
+  const newCount = useNewFeed()
+  const topRef = useRef<HTMLDivElement>(null)
   const [storyRows, setStoryRows] = useState<StoryRow[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stories, setStories]   = useState<Story[]>([])
@@ -95,6 +95,7 @@ export default function Home() {
     const { data } = await q
     setProducts((data ?? []) as unknown as Product[])
     setLoading(false)
+    markFeedSeen()
   }, [category])
 
   // Load stories from DB, fall back to dev mock
@@ -147,8 +148,8 @@ useEffect(() => {
 
   return (
     <div className={`min-h-dvh ${desk ? 'pb-10' : 'pb-28'}`} style={{ background: 'var(--k-bg)' }}>
-      <div className={desk ? 'max-w-[920px] mx-auto' : ''}>
-        {!desk && <HomeGreeting />}
+      <div ref={topRef} />
+      <div className={desk ? 'max-w-[920px] mx-auto' : 'max-w-[820px] mx-auto'}>
 
         {/* ── Stories ── */}
         <div className={`px-4 pb-1 ${desk ? 'pt-7' : 'pt-4'}`}>
@@ -191,13 +192,22 @@ useEffect(() => {
           </ScrollRow>
         </div>
 
-        {!desk && <LiveOrderCard />}
 
         {/* ── Category tabs ── */}
         <div
           className={`sticky z-20 px-4 pt-4 ${desk ? 'top-0' : 'top-14'}`}
           style={{ background: 'var(--k-bg)', borderBottom: '1px solid var(--k-line)' }}
         >
+          {newCount > 0 && (
+            <button
+              onClick={() => { void load(); topRef.current?.scrollIntoView({ behavior: 'smooth' }) }}
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-3 h-10 px-5 rounded-full inline-flex items-center gap-2 text-sm font-extrabold shadow-lg transition-transform active:scale-95"
+              style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}
+              aria-live="polite"
+            >
+              <ArrowUp size={15} /> {newCount} new listing{newCount === 1 ? '' : 's'}
+            </button>
+          )}
           <ScrollRow className="gap-6">
             {CATEGORIES.map(c => (
               <button
@@ -215,8 +225,6 @@ useEffect(() => {
             ))}
           </ScrollRow>
         </div>
-
-        {!desk && <FlashDeals />}
 
         {/* ── Top markets: slim pills, fades when there is more to the right ── */}
         <div className="px-4 pt-5 flex items-center gap-3">
@@ -241,26 +249,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* ── Quick actions (phone only; the sidebar has these on computers) ── */}
-        {!desk && (
-          <div className="px-4 pt-5">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { icon: Zap, label: 'Flash deals', sub: 'Ends soon', path: '/search?q=deals' },
-                { icon: TrendingUp, label: 'Trending', sub: 'See now', path: '/trending' },
-                { icon: Package, label: 'My orders', sub: 'Track', path: '/orders' },
-              ].map(({ icon: Icon, label, sub, path }) => (
-                <button key={label} onClick={() => void navigate(path)}
-                  className="rounded-2xl p-3.5 flex flex-col gap-1 text-left transition-all active:scale-95" style={CARD}>
-                  <Icon size={18} style={{ color: 'var(--k-accent)' }} />
-                  <p className="text-[13px] font-bold mt-1.5" style={{ color: 'var(--k-text)' }}>{label}</p>
-                  <p className="text-[11px]" style={{ color: 'var(--k-muted)' }}>{sub}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <FollowingFeed />
 
         {/* ── Listings ── */}
@@ -275,7 +263,7 @@ useEffect(() => {
           </div>
 
           {loading ? (
-            <div className={`grid gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-3'}`}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-2xl overflow-hidden animate-pulse" style={CARD}>
                   <div className="w-full aspect-[4/3]" style={{ background: 'var(--k-surface2)' }} />
@@ -292,7 +280,7 @@ useEffect(() => {
               <p className="text-xs mt-1" style={{ color: 'var(--k-muted)' }}>Try another category, or check back soon.</p>
             </div>
           ) : (
-            <div className={`grid gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-3'}`}>
               {products.map((p, idx) => (
                 <motion.div
                   key={p.id}
@@ -352,7 +340,6 @@ useEffect(() => {
           )}
         </div>
 
-        {!desk && <TrustCard />}
         <div className="h-6" />
       </div>
 
