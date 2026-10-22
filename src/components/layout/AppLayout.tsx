@@ -7,6 +7,7 @@ import { useDesk } from '@/hooks/useDesk'
 import '@/styles/kasaja-theme.css'
 import { useEffect } from 'react'
 import { useNewFeed } from '@/hooks/useNewFeed'
+import IdPrompt from '@/components/IdPrompt'
 
 export default function AppLayout() {
   const desk = useDesk()
@@ -25,6 +26,7 @@ export default function AppLayout() {
         <div className="flex h-full min-w-[1200px]">
           <DesktopSidebar />
           <main className="flex-1 min-w-0 h-full overflow-y-auto">
+            <div className="max-w-[920px] mx-auto"><IdPrompt /></div>
             <Outlet />
           </main>
           <RightPanel />
@@ -38,6 +40,7 @@ export default function AppLayout() {
     <div className="min-h-dvh flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Navbar />
       <main className="flex-1 pb-20">
+        <IdPrompt />
         <Outlet />
       </main>
       <BottomNav />

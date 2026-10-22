@@ -34,6 +34,34 @@ serve(async (req) => {
 
     console.log(`Payment confirmed: ${reference} — ₦${amountNaira} — type: ${type}`)
 
+    // Paystack can send the same event more than once. Only act the first time we see a reference.
+    const { error: dupErr } = await supabase.from('processed_payments').insert({ reference, kind: type })
+    if (dupErr && dupErr.code === '23505') {
+      console.log('Duplicate event ignored:', reference)
+      return new Response('ok', { status: 200 })
+    }
+    if (dupErr) console.error('processed_payments check failed (run verification-setup.sql):', dupErr.message)
+
+    // ID verification fee: exactly NGN 200 or more (amount is in kobo). Gives 3 attempts.
+    if (type === 'id_verification' && userId) {
+      if (amount < 20000) {
+        console.error('ID fee amount mismatch', reference, amount)
+        return new Response('ok', { status: 200 })
+      }
+      const { data: prof } = await supabase.from('profiles').select('id_status').eq('id', userId).maybeSingle()
+      if (prof && ['none', 'rejected', 'paid'].includes(prof.id_status)) {
+        await supabase.from('profiles').update({ id_status: 'paid', id_attempts_left: 3 }).eq('id', userId)
+        await supabase.from('notifications').insert({
+          user_id: userId, type: 'system',
+          title: 'Payment received', body: 'Now add your details and selfie to finish ID verification.',
+          data: { link: '/verify-id' },
+        })
+      } else {
+        console.error('ID fee paid but status is', prof?.id_status, reference)
+      }
+      return new Response('OK', { status: 200 })
+    }
+
         const orderIds: string[] = metadata?.order_ids ?? (orderId ? [orderId] : [])
     if (type === 'order_payment' && orderIds.length > 0) {
       const { data: rows } = await supabase.from('orders').select('id, total_kobo').in('id', orderIds)

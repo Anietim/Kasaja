@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { MapPin, MessageCircle, Heart, Package, ChevronLeft, Share2 } from 'lucide-react'
-import { VerifiedPill } from '@/components/VerifiedBadge'
+import { UserTicks } from '@/components/Tick'
 import { supabase } from '@/lib/supabase'
 import { MOCK } from '@/lib/mockData'
 import { getOrCreateConversation } from '@/lib/chat'
@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 
 interface Store {
   id: string; name: string; description?: string; logo_url?: string; banner_url?: string
-  is_verified: boolean; avg_rating: number; rating_count: number; followers_count: number
+  owner_id?: string; is_verified: boolean; avg_rating: number; rating_count: number; followers_count: number
   market?: { name: string }; products_count?: number
 }
 
@@ -95,7 +95,7 @@ export default function StoreProfile() {
         </div>
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-display font-bold text-white">{store?.name}</h1>
-          {store?.is_verified && <VerifiedPill type="store" size="sm" />}
+          <UserTicks userId={store?.owner_id} legacyVerified={!!store?.is_verified} size={20} />
         </div>
         {store?.market?.name && (
           <p className="text-muted text-sm flex items-center gap-1 mt-0.5">

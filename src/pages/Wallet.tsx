@@ -281,6 +281,16 @@ export default function WalletPage() {
     const bank = banks.find(b => b.id === selectedBank)
     if (!bank) return
 
+    // ID must be verified before money leaves (also enforced in the database)
+    if (!DEV_BYPASS && user) {
+      const { data: idp } = await supabase.from('profiles').select('id_status').eq('id', user.id).maybeSingle()
+      if ((idp as { id_status?: string } | null)?.id_status !== 'verified') {
+        toast.error('Verify your ID to unlock withdrawals')
+        void navigate('/verify-id')
+        return
+      }
+    }
+
     // Withdrawal cooldown check
     const cooldown = canWithdraw()
     if (!cooldown.allowed && !DEV_BYPASS) {

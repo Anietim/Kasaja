@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowLeft, MapPin, MessageSquare, Store, Bike, ShoppingBag, Loader2, Lock, BadgeCheck, Check, X } from 'lucide-react'
+import { ArrowLeft, MapPin, MessageSquare, Store, Bike, ShoppingBag, Loader2, Lock, Check, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 import { getOrCreateConversation } from '@/lib/chat'
 
 interface ProfileRow {
@@ -154,7 +155,7 @@ export default function PublicProfile() {
         </div>
         <h2 className="mt-4 text-xl font-bold text-white flex items-center gap-1.5">
           {name}
-          {profile.is_verified && <BadgeCheck size={18} className="text-brand-500" />}
+          <UserTicks userId={id} size={20} legacyVerified={!!profile.is_verified} />
         </h2>
 
         <div className="flex gap-6 mt-3 text-sm">

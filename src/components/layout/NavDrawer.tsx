@@ -10,6 +10,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { initials } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
+import { UserTicks } from '@/components/Tick'
 import '@/styles/kasaja-theme.css'
 
 interface Props {
@@ -57,6 +58,7 @@ export const SECTIONS = [
       { icon: ShieldAlert,  label: 'Admin Panel',     path: '/admin' },
       { icon: Users,        label: 'User Management', path: '/admin/users' },
       { icon: ShieldCheck,  label: 'Verifications',   path: '/admin/verifications' },
+      { icon: ShieldCheck,  label: 'ID Checks',       path: '/admin/id-checks' },
       { icon: Users,        label: 'Manage Groups',   path: '/admin/groups' },
       { icon: AlertTriangle,label: 'Disputes',        path: '/admin/disputes' },
     ],
@@ -64,6 +66,7 @@ export const SECTIONS = [
   {
     title: 'Account',
     items: [
+      { icon: ShieldCheck, label: 'Verify my ID',   path: '/verify-id' },
       { icon: Gift,     label: 'Refer & Earn',      path: '/referral' },
       { icon: Settings, label: 'Settings',         path: '/settings' },
       { icon: Shield,   label: 'Security',         path: '/security-setup' },
@@ -151,7 +154,7 @@ export default function NavDrawer({ open, onClose }: Props) {
                   : initials(profile?.display_name || 'U')}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold truncate" style={{ color: 'var(--k-text)' }}>{displayTitle}</span>
+                <span className="flex items-center gap-1.5 text-sm font-bold" style={{ color: 'var(--k-text)' }}><span className="truncate">{displayTitle}</span><UserTicks userId={profile?.id} size={15} /></span>
                 <span className="block text-xs truncate" style={{ color: 'var(--k-muted)' }}>
                   {Array.from(new Set(roles.map(r => ROLE_NAMES[r]).filter(Boolean))).slice(0, 2).join(' · ') || 'View profile'}
                 </span>

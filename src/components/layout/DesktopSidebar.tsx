@@ -7,6 +7,7 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 import { useTheme } from '@/hooks/useTheme'
 import { useNewFeed } from '@/hooks/useNewFeed'
 import { initials } from '@/lib/utils'
+import { UserTicks } from '@/components/Tick'
 
 /** The whole user menu, pinned on the left of computer screens. Same role rules as the phone menu. */
 export default function DesktopSidebar() {
@@ -42,7 +43,7 @@ export default function DesktopSidebar() {
             {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : initials(name)}
           </span>
           <span className="min-w-0">
-            <span className="block text-sm font-bold truncate" style={{ color: 'var(--k-text)' }}>{name}</span>
+            <span className="flex items-center gap-1.5 text-sm font-bold" style={{ color: 'var(--k-text)' }}><span className="truncate">{name}</span><UserTicks userId={profile?.id} size={15} /></span>
             <span className="block text-[11px]" style={{ color: 'var(--k-muted)' }}>
               {Array.from(new Set(roles.map(r => ROLE_NAMES[r]).filter(Boolean))).slice(0, 2).join(' · ') || 'View profile'}
             </span>
