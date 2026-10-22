@@ -163,12 +163,12 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center"
+        className="story-dark fixed inset-0 z-50 flex items-center justify-center"
         style={{ background: '#000' }}
       >
         {/* Story container */}
-        <div className="relative w-full max-w-sm h-full max-h-dvh overflow-hidden"
-          style={{ aspectRatio: '9/16', background: '#111' }}>
+        <div className="relative overflow-hidden"
+          style={{ height: '100dvh', width: 'min(100vw, calc(100dvh * 9 / 16))', background: '#111' }}>
 
           {/* Background image */}
           <AnimatePresence mode="wait">
@@ -184,20 +184,22 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain bg-black"
                 onLoadedMetadata={e => setDurationMs(Math.max(1000, e.currentTarget.duration * 1000))}
               />
             ) : (
-              <motion.img
+              <motion.div
                 key={currentStory.id}
-                src={currentStory.media_url}
-                alt=""
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+                className="absolute inset-0 bg-black"
+              >
+                {/* soft blurred copy fills the sides; the real picture is shown whole on top */}
+                <img src={currentStory.media_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-40" style={{ filter: 'blur(28px)', transform: 'scale(1.15)' }} />
+                <img src={currentStory.media_url} alt="" className="absolute inset-0 w-full h-full object-contain" />
+              </motion.div>
             )}
           </AnimatePresence>
 

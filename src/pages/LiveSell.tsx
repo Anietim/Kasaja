@@ -51,25 +51,27 @@ export default function LiveSell() {
   }
 
   const startLive = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error('This browser cannot use the camera here. Open KASAJA in Chrome or Safari over https.')
+      return
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: true,
+      })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.play().catch(() => {})
-      }
-      setIsLive(true)
+      setIsLive(true)          // the video element appears now; the effect below attaches the stream to it
       setViewers(1)
       setComments(DEV_BYPASS ? DEV_COMMENTS : [])
       setPinnedProducts(DEV_BYPASS ? DEV_PRODUCTS : [])
       toast.success('You are now LIVE!')
-      if (DEV_BYPASS) {
-        // simulate viewer joins
-        const t = setInterval(() => setViewers(v => v + Math.floor(Math.random() * 3)), 4000)
-        return () => clearInterval(t)
-      }
-    } catch {
-      toast.error('Could not access camera. Check permissions.')
+    } catch (err) {
+      const name = err instanceof DOMException ? err.name : ''
+      if (name === 'NotAllowedError') toast.error('Camera is blocked. Tap the lock icon in the address bar, allow Camera and Microphone, then try again.')
+      else if (name === 'NotFoundError') toast.error('No camera was found on this device.')
+      else if (name === 'NotReadableError') toast.error('Another app is using your camera. Close it and try again.')
+      else toast.error('Could not access the camera. Check permissions.')
     }
   }, [])
 
@@ -116,6 +118,16 @@ export default function LiveSell() {
     setPinnedProducts(prev => prev.find(x => x.id === p.id) ? prev : [...prev, p])
     setShowProductPicker(false)
   }, [])
+
+  // Attach the camera to the video as soon as it exists on screen
+  useEffect(() => {
+    if (!isLive) return
+    const v = videoRef.current
+    if (v && streamRef.current) {
+      v.srcObject = streamRef.current
+      void v.play().catch(() => {})
+    }
+  }, [isLive])
 
   // timer
   useEffect(() => {

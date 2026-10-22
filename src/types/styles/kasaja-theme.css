@@ -1,0 +1,42 @@
+/* KASAJA calm theme tokens: one orange accent, dark and light moods.
+   The app switches mood by putting "light" or "dark" on <html> (see useTheme). */
+:root {
+  --k-bg: #0B0B0D;
+  --k-surface: #121215;
+  --k-surface2: #1B1B20;
+  --k-line: rgba(255, 255, 255, 0.09);
+  --k-line2: rgba(255, 255, 255, 0.22);
+  --k-text: #F4F2EF;
+  --k-muted: #B4B4BC;   /* secondary text: readable on the dark ground */
+  --k-faint: #8E8E98;   /* numbers, hints */
+  --k-accent: #FF7A1A;
+  --k-on-accent: #1A0B05;
+  --k-accent-soft: rgba(255, 122, 26, 0.13);
+  --k-ok: #34D399;
+}
+html.light {
+  --k-bg: #F5F1EA;
+  --k-surface: #FFFFFF;
+  --k-surface2: #F0EADF;
+  --k-line: #E3DACD;
+  --k-line2: #CFC5B7;
+  --k-text: #1C1814;
+  --k-muted: #5F564C;
+  --k-faint: #7A7066;
+  --k-accent: #D9480F;
+  --k-on-accent: #FFFFFF;
+  --k-accent-soft: rgba(217, 72, 15, 0.1);
+  --k-ok: #15803D;
+}
+
+/* Rows that scroll sideways without a visible scrollbar */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+html.light .k-shell { color-scheme: light; }
+
+/* Story viewer is always a black full-screen stage: keep its text white in light mode too */
+html.light .story-dark .text-white { color: #fff !important; }
+html.light .story-dark .text-zinc-400 { color: #a1a1aa !important; }
+html.light .story-dark .bg-zinc-900 { background-color: #18181b !important; }
+html.light .story-dark .bg-zinc-700 { background-color: #3f3f46 !important; }

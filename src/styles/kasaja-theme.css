@@ -34,3 +34,9 @@ html.light {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
 html.light .k-shell { color-scheme: light; }
+
+/* Story viewer is always a black full-screen stage: keep its text white in light mode too */
+html.light .story-dark .text-white { color: #fff !important; }
+html.light .story-dark .text-zinc-400 { color: #a1a1aa !important; }
+html.light .story-dark .bg-zinc-900 { background-color: #18181b !important; }
+html.light .story-dark .bg-zinc-700 { background-color: #3f3f46 !important; }

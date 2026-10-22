@@ -32,7 +32,9 @@ export default function Navbar() {
           {/* Left — hamburger */}
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 text-white/40 hover:text-white transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2 transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            style={{ color: 'var(--k-text)' }}
+            aria-label="Open menu"
           >
             <Menu size={22} />
           </button>
@@ -45,8 +47,9 @@ export default function Navbar() {
                 placeholder="Search products or stores"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm text-white outline-none transition-all"
+                className="w-full rounded-2xl pl-4 pr-10 py-2 text-sm outline-none transition-all"
                 style={{
+                  color: 'var(--k-text)',
                   background: 'var(--k-surface, #11151A)',
                   border: '1px solid var(--k-line, rgba(255,255,255,0.1))',
                   fontFamily: 'DM Sans, sans-serif',
@@ -59,14 +62,14 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-80" style={{ color: 'var(--k-muted)' }}
                 >
                   <X size={14} />
                 </button>
               ) : (
                 <button
                   type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/25"
+                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--k-muted)' }}
                 >
                   <SlidersHorizontal size={14} />
                 </button>
@@ -78,15 +81,17 @@ export default function Navbar() {
           <button
             onClick={() => setPanelOpen(true)}
             aria-label="Discover: order tracker, market groups, who to follow"
-            className="p-2 text-white/40 hover:text-white transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            style={{ color: 'var(--k-muted)' }}
+            className="p-2 transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            style={{ color: 'var(--k-text)' }}
           >
             <LayoutGrid size={20} />
           </button>
 
           <button
             onClick={() => setNotifsOpen(true)}
-            className="relative p-2 text-white/40 hover:text-white transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="relative p-2 transition shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            style={{ color: 'var(--k-text)' }}
+            aria-label="Notifications"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
