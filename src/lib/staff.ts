@@ -7,4 +7,5 @@ export const STAFF_BLOCKED = [
   '/request-rider', '/request-delivery', '/delivery/new', '/delivery/radar', '/rider', '/rider/jobs',
   '/wallet', '/wallet/rider', '/store/dashboard', '/find-rider', '/seller-verification', '/rider-verification', '/verify-id', '/referral',
 ]
+export const SUPER_ONLY = ['/admin/staff', '/admin/audit']
 export const staffBlocked = (path: string) => STAFF_BLOCKED.some(p => path === p || path.startsWith(p + '/'))

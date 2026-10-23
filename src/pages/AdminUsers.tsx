@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { UserTicks, clearTickCache } from '@/components/Tick'
 import { isStaff } from '@/lib/staff'
+import AdminNav from '@/components/AdminNav'
 
 interface Row {
   id: string; email: string | null; display_name: string | null; avatar_url: string | null
@@ -90,6 +91,7 @@ export default function AdminUsers() {
         <span className="text-xs" style={{ color: 'var(--k-muted)' }}>{rows ? `${shown.length} of ${rows.length}` : ''}</span>
       </div>
 
+      <AdminNav />
       <div className="flex items-center gap-2 h-11 px-3 rounded-xl mb-3" style={{ background: 'var(--k-surface)', border: '1px solid var(--k-line)' }}>
         <Search size={16} style={{ color: 'var(--k-muted)' }} />
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search name or email" className="flex-1 bg-transparent outline-none text-sm" />

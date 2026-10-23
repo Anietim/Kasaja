@@ -8,7 +8,7 @@ import {
   Search, Settings, TrendingUp, BarChart2, Shield, ShieldCheck, Gift, Video,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { isStaff, staffBlocked } from '@/lib/staff'
+import { isStaff, staffBlocked, SUPER_ONLY } from '@/lib/staff'
 import { initials } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
 import { UserTicks } from '@/components/Tick'
@@ -56,12 +56,15 @@ export const SECTIONS = [
     title: 'Admin',
     items: [
       { icon: BarChart2,    label: 'Analytics',       path: '/admin/analytics' },
-      { icon: ShieldAlert,  label: 'Admin Panel',     path: '/admin' },
+      { icon: ShieldAlert,  label: 'Overview',        path: '/admin' },
+      { icon: Package,      label: 'Orders',          path: '/admin/orders' },
       { icon: Users,        label: 'User Management', path: '/admin/users' },
       { icon: ShieldCheck,  label: 'Verifications',   path: '/admin/verifications' },
       { icon: ShieldCheck,  label: 'ID Checks',       path: '/admin/id-checks' },
       { icon: Users,        label: 'Manage Groups',   path: '/admin/groups' },
       { icon: AlertTriangle,label: 'Disputes',        path: '/admin/disputes' },
+      { icon: ShieldCheck,  label: 'Staff and roles', path: '/admin/staff' },
+      { icon: User,         label: 'Audit log',       path: '/admin/audit' },
     ],
   },
   {
@@ -176,7 +179,7 @@ export default function NavDrawer({ open, onClose }: Props) {
                   <p className="text-[10px] font-bold uppercase tracking-[0.14em] px-3 pt-3 pb-1.5" style={{ color: 'var(--k-faint)' }}>
                     {section.title}
                   </p>
-                  {section.items.filter(i => !isStaff(roles) || !staffBlocked(i.path)).map(({ icon: Icon, label, path }) => {
+                  {section.items.filter(i => (!isStaff(roles) || !staffBlocked(i.path)) && (!SUPER_ONLY.includes(i.path) || roles.includes('super_admin'))).map(({ icon: Icon, label, path }) => {
                     const on = path === '/home' && window.location.pathname.startsWith('/home')
                     return (
                       <button

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Moon, Sun, Bell, Lock, User, Store, Bike, Shield, ChevronRight, Check } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
+import { isStaff } from '@/lib/staff'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { requestPushPermission, subscribeToPush, unsubscribeFromPush } from '@/lib/pushNotifications'
@@ -13,7 +14,7 @@ const Toggle = ({ checked, onChange }: ToggleProps) => (
     onClick={() => onChange(!checked)}
     className={`w-11 h-6 rounded-full transition-colors relative ${checked ? 'bg-brand-500' : 'bg-zinc-700'}`}
   >
-    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow ${checked ? 'translate-x-5.5 left-0.5' : 'left-0.5'}`} />
+    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow ${checked ? 'translate-x-5 left-0.5' : 'left-0.5'}`} />
   </button>
 )
 
@@ -41,7 +42,8 @@ const Row = ({ icon, label, sublabel, right, onClick }: {
 export default function Settings() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
+  const staff = isStaff(profile?.roles)
 
   // Notification prefs (saved to localStorage for now)
   const [pushEnabled, setPushEnabled] = useState(() => localStorage.getItem('push_enabled') === 'true')
@@ -182,18 +184,18 @@ export default function Settings() {
         </Section>
 
         {/* BUYER */}
-        <Section title="Buyer Settings">
+        {!staff && <Section title="Buyer Settings">
           <Row
             icon={<Shield size={16} />}
             label="Default Escrow Protection"
             sublabel="Automatically enable buyer protection on new orders"
             right={<Toggle checked={defaultEscrow} onChange={v => { setDefaultEscrow(v); save('buyer_escrow', v) }} />}
           />
-          <Row icon={<User size={16} />} label="Default Delivery Address" sublabel="Lagos Island, Lagos" onClick={() => void navigate('/profile')} />
-        </Section>
+          <Row icon={<User size={16} />} label="Default Delivery Address" sublabel="Set in your profile" onClick={() => void navigate('/profile')} />
+        </Section>}
 
         {/* SELLER */}
-        <Section title="Seller Settings">
+        {!staff && <Section title="Seller Settings">
           <Row
             icon={<Store size={16} />}
             label="Vacation Mode"
@@ -207,19 +209,19 @@ export default function Settings() {
             right={<Toggle checked={autoAccept} onChange={v => { setAutoAccept(v); save('seller_auto_accept', v) }} />}
           />
           <Row icon={<Store size={16} />} label="Payment Account" sublabel="Add your bank account for withdrawals" onClick={() => void navigate('/profile')} />
-        </Section>
+        </Section>}
 
         {/* RIDER */}
-        <Section title="Rider Settings">
+        {!staff && <Section title="Rider Settings">
           <Row
             icon={<Bike size={16} />}
             label="Surge Alerts"
             sublabel="Get notified when demand is high in your area"
             right={<Toggle checked={surgeAlerts} onChange={v => { setSurgeAlerts(v); save('rider_surge', v) }} />}
           />
-          <Row icon={<Bike size={16} />} label="Vehicle Type" sublabel="Motorcycle" onClick={() => toast.info('Vehicle type editing coming soon')} />
-          <Row icon={<Bike size={16} />} label="Max Delivery Radius" sublabel="15 km" onClick={() => toast.info('Radius editing coming soon')} />
-        </Section>
+          <Row icon={<Bike size={16} />} label="Vehicle Type" sublabel="Coming soon" onClick={() => toast.info('Vehicle type editing coming soon')} />
+          <Row icon={<Bike size={16} />} label="Max Delivery Radius" sublabel="Coming soon" onClick={() => toast.info('Radius editing coming soon')} />
+        </Section>}
 
         {/* SECURITY */}
         <Section title="Security">

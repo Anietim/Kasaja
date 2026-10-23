@@ -9,6 +9,7 @@ import { useTypingIndicator } from '@/hooks/useTypingIndicator'
 import { sendGroupNotification } from '@/hooks/useNotifications'
 import { useAuth } from '@/hooks/useAuth'
 import { isStaff } from '@/lib/staff'
+import { UserTicks } from '@/components/Tick'
 import { toast } from 'sonner'
 
 const DEV = import.meta.env.DEV
@@ -89,7 +90,7 @@ function UserProfileSheet({
             {name[0]?.toUpperCase()}
           </div>
           <div>
-            <p className="font-bold text-white text-base">{name}</p>
+            <p className="font-bold text-white text-base flex items-center gap-1.5">{name}<UserTicks userId={userId} size={16} /></p>
             <p className="text-xs text-zinc-400">{roleLabel}</p>
           </div>
         </div>
@@ -549,6 +550,7 @@ export default function GroupFeed() {
                   >
                     {post.author_name}
                   </button>
+                  <UserTicks userId={post.author_id} size={14} />
                   <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${post.post_type === 'want' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'}`}>
                     {post.post_type === 'want' ? 'BUYING' : 'SELLING'}
                   </span>
@@ -603,6 +605,7 @@ export default function GroupFeed() {
                         >
                           {reply.author_name}
                         </button>
+                        <UserTicks userId={reply.author_id} size={13} />
                         <span className="text-xs text-zinc-500">{timeAgo(reply.created_at)}</span>
                       </div>
                       {reply.price && <span className="text-brand-500 font-bold text-sm">₦{reply.price.toLocaleString()}</span>}

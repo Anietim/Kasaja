@@ -40,3 +40,74 @@ html.light .story-dark .text-white { color: #fff !important; }
 html.light .story-dark .text-zinc-400 { color: #a1a1aa !important; }
 html.light .story-dark .bg-zinc-900 { background-color: #18181b !important; }
 html.light .story-dark .bg-zinc-700 { background-color: #3f3f46 !important; }
+
+/* Verification ticks */
+:root {
+  --tk-id: #000000; --tk-id-edge: #F4F2EF; --tk-id-k: #F4F2EF;
+  --tk-rider: #2DD4BF; --tk-rider-on: #04201C;
+  --tk-shopper: #8E92FF; --tk-shopper-on: #0E0F2E;
+  --tk-gold: #E8B84A; --tk-gold-on: #2A1E00;
+  --tk-team: #000000;
+}
+html.light {
+  --tk-id: #000000; --tk-id-edge: transparent; --tk-id-k: #F4F2EF;
+  --tk-rider: #0F766E; --tk-rider-on: #FFFFFF;
+  --tk-shopper: #4338CA; --tk-shopper-on: #FFFFFF;
+  --tk-gold: #B7860B; --tk-gold-on: #FFFFFF;
+  --tk-team: #1C1814;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Older pages (Settings, Groups, Wallet, Orders …) use the first colour set:
+   canvas, surface, zinc, ink and brand (purple). These rules point those names at the
+   warm KASAJA tokens, in dark and light, so every page matches the side panels.
+   The :not(#k) part makes them win over the older html.light rules in index.css.
+   ───────────────────────────────────────────────────────────── */
+html:not(#k) .bg-canvas,
+html:not(#k) .bg-canvas\/95,
+html:not(#k) .bg-canvas\/90,
+html:not(#k) .bg-\[\#080A0D\]                { background-color: var(--k-bg) !important; }
+html:not(#k) .bg-surface,
+html:not(#k) .bg-card,
+html:not(#k) .bg-zinc-900,
+html:not(#k) .bg-\[\#11151A\]                { background-color: var(--k-surface) !important; }
+html:not(#k) .bg-zinc-800                    { background-color: var(--k-surface2) !important; }
+html:not(#k) .bg-zinc-700                    { background-color: var(--k-line2) !important; }
+html:not(#k) .hover\:bg-zinc-800:hover,
+html:not(#k) .active\:bg-zinc-800:active,
+html:not(#k) .hover\:bg-canvas:hover         { background-color: var(--k-surface2) !important; }
+
+html:not(#k) .text-white,
+html:not(#k) .text-ink-base,
+html:not(#k) .text-zinc-200                  { color: var(--k-text) !important; }
+html:not(#k) .text-zinc-300,
+html:not(#k) .text-zinc-400,
+html:not(#k) .text-ink-muted,
+html:not(#k) .text-muted                     { color: var(--k-muted) !important; }
+html:not(#k) .text-zinc-500,
+html:not(#k) .text-zinc-600                  { color: var(--k-faint) !important; }
+html:not(#k) .placeholder-ink-muted::placeholder { color: var(--k-faint) !important; }
+
+html:not(#k) .border-zinc-800,
+html:not(#k) .border-zinc-700,
+html:not(#k) .border-ink-subtle,
+html:not(#k) .border-ink-subtle\/10,
+html:not(#k) .border-ink-subtle\/20,
+html:not(#k) .divide-zinc-800 > :not([hidden]) ~ :not([hidden]) { border-color: var(--k-line) !important; }
+
+/* purple brand → the single orange accent */
+html:not(#k) .bg-brand-500,
+html:not(#k) .bg-brand-600,
+html:not(#k) .hover\:bg-brand-600:hover      { background-color: var(--k-accent) !important; }
+html:not(#k) .bg-brand-500\/10,
+html:not(#k) .bg-brand-500\/20               { background-color: var(--k-accent-soft) !important; }
+html:not(#k) .text-brand-400,
+html:not(#k) .text-brand-500,
+html:not(#k) .text-brand-600                 { color: var(--k-accent) !important; }
+html:not(#k) .border-brand-500,
+html:not(#k) .focus\:border-brand-500:focus,
+html:not(#k) .hover\:border-brand-500\/50:hover { border-color: var(--k-accent) !important; }
+/* text on an orange button stays readable in both moods */
+html:not(#k) .bg-brand-500.text-white,
+html:not(#k) .bg-brand-500 .text-white,
+html:not(#k) .bg-brand-500.text-black        { color: var(--k-on-accent) !important; }
