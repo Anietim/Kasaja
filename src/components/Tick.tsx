@@ -93,7 +93,8 @@ function fetchRow(userId: string): Promise<Row | null> {
 
 export function ticksFor(row: Row | null): TickKind[] {
   if (!row) return []
-  const roles = row.roles ?? []
+  // Admin of any kind: one KASAJA Team tick only. It overrides every other tick.
+  const roles = (row.roles ?? []) as string[]
   if (roles.some(r => ['admin', 'super_admin', 'investigation_admin'].includes(r))) return ['team']
   const out: TickKind[] = []
   if (row.id_status === 'verified') out.push('id')
@@ -113,7 +114,7 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
   /** old stores.is_verified flag: shows the seller tick if nothing else loads */
   legacyVerified?: boolean
 }) {
-  const [kinds, setKinds] = useState<TickKind[]>(legacyVerified ? ['seller'] : [])
+  const [kinds, setKinds] = useState<TickKind[]>([])
   const [open, setOpen] = useState<TickKind | null>(null)
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
   }, [userId, legacyVerified])
 
   if (kinds.length === 0) return null
-  const shown = compact ? kinds.slice(-1) : kinds
+  const shown = kinds.includes('team') ? ['team' as TickKind] : compact ? kinds.slice(-1) : kinds
 
   return (
     <>

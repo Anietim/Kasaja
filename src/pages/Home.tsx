@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { Heart, Star, MapPin, Package, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
-import { MOCK } from '@/lib/mockData'
 import { StoryViewer } from '@/components/StoryViewer'
 import FollowingFeed from '@/components/home/FollowingFeed'
 import { useDesk } from '@/hooks/useDesk'
@@ -29,16 +28,6 @@ interface Story {
 const CATEGORIES = ['All', 'Fashion', 'Electronics', 'Food', 'Beauty', 'Home', 'Auto', 'Health', 'Sports']
 const VIEWER_NOW = Date.now()
 
-// Dev mock stories
-const DEV_STORIES: Story[] = [
-  { id: '1', user_id: 'u1', display_name: 'Adaeze', avatar_url: null, has_new: true },
-  { id: '2', user_id: 'u2', display_name: 'Balogun Mkt', avatar_url: null, has_new: true },
-  { id: '3', user_id: 'u3', display_name: 'TechKing', avatar_url: null, has_new: true },
-  { id: '4', user_id: 'u4', display_name: 'FabricHub', avatar_url: null, has_new: false },
-  { id: '5', user_id: 'u5', display_name: 'GadgetsNG', avatar_url: null, has_new: true },
-  { id: '6', user_id: 'u6', display_name: 'ChiefBoss', avatar_url: null, has_new: false },
-  { id: '7', user_id: 'u7', display_name: 'Emeka Auto', avatar_url: null, has_new: true },
-]
 type StoryRow = { id: string; user_id: string; media_url: string; media_type: string; caption: string | null; hashtags: string[] | null; expires_at: string; created_at: string; profiles?: { display_name: string; avatar_url: string | null } | null }
 
 export default function Home() {
@@ -49,6 +38,7 @@ export default function Home() {
   const [storyRows, setStoryRows] = useState<StoryRow[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [stories, setStories]   = useState<Story[]>([])
+  const [markets, setMarkets]   = useState<{ id: string; name: string }[]>([])
   const [category, setCategory] = useState('All')
   const [loading, setLoading]   = useState(true)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
@@ -98,7 +88,7 @@ export default function Home() {
     markFeedSeen()
   }, [category])
 
-  // Load stories from DB, fall back to dev mock
+  // Load stories from the database
 useEffect(() => {
   async function loadStories() {
     try {
@@ -119,16 +109,20 @@ useEffect(() => {
           has_new: true,
         })))
       } else {
-        setStories(import.meta.env.DEV ? DEV_STORIES : [])
+        setStories([])
       }
     } catch {
-      setStories(DEV_STORIES)
+      setStories([])
     }
   }
   void loadStories()
 }, [])
 
   useEffect(() => { void load() }, [load])
+
+  useEffect(() => {
+    void supabase.from('ng_markets').select('id, name').order('name').limit(8).then(({ data }) => setMarkets((data ?? []) as { id: string; name: string }[]))
+  }, [])
 
   const fmt = (kobo: number) => '₦' + (kobo / 100).toLocaleString('en-NG')
 
@@ -231,10 +225,10 @@ useEffect(() => {
           <span className="text-xs font-bold shrink-0" style={{ color: 'var(--k-muted)' }}>Top markets</span>
           <div className="flex-1 min-w-0">
             <ScrollRow className="gap-2">
-              {MOCK.markets.slice(0, 8).map(m => (
+              {markets.map(m => (
                 <button
-                  key={m.slug}
-                  onClick={() => void navigate(`/market/${m.slug}`)}
+                  key={m.id}
+                  onClick={() => void navigate(`/markets/${m.id}`)}
                   className="shrink-0 h-8 px-3 rounded-full inline-flex items-center gap-1.5 text-xs font-semibold transition-transform active:scale-95"
                   style={{ border: '1px solid var(--k-line)', color: 'var(--k-text)' }}
                 >

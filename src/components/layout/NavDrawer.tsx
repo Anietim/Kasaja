@@ -8,6 +8,7 @@ import {
   Search, Settings, TrendingUp, BarChart2, Shield, ShieldCheck, Gift, Video,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { isStaff, staffBlocked } from '@/lib/staff'
 import { initials } from '@/lib/utils'
 import { useTheme } from '@/hooks/useTheme'
 import { UserTicks } from '@/components/Tick'
@@ -104,8 +105,8 @@ export default function NavDrawer({ open, onClose }: Props) {
   const roles: string[] = profile?.roles ?? []
   const isAdmin = roles.some(r => ['admin', 'investigation_admin', 'super_admin'].includes(r))
   const canSee = (title: string) =>
-      title === 'Seller' ? (roles.includes('seller') || roles.includes('independent'))
-    : title === 'Rider' ? roles.includes('rider')
+      title === 'Seller' ? !isAdmin && (roles.includes('seller') || roles.includes('independent'))
+    : title === 'Rider' ? !isAdmin && roles.includes('rider')
     : title === 'Admin' ? isAdmin
     : true
 
@@ -161,7 +162,7 @@ export default function NavDrawer({ open, onClose }: Props) {
               </span>
             </button>
 
-            {(roles.includes('seller') || roles.includes('independent')) && (
+            {!isStaff(roles) && (roles.includes('seller') || roles.includes('independent')) && (
               <button onClick={() => go('/sell')} className="mx-4 mb-2 h-11 rounded-xl text-sm font-extrabold flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-transform"
                 style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>
                 <Plus size={16} /> New listing
@@ -170,12 +171,12 @@ export default function NavDrawer({ open, onClose }: Props) {
 
             {/* Nav sections */}
             <div className="flex-1 overflow-y-auto no-scrollbar px-2.5 pb-3">
-              {SECTIONS.filter(s => canSee(s.title)).map(section => (
+              {SECTIONS.filter(s => canSee(s.title) && !(isStaff(roles) && s.title !== 'Admin' && s.items.every(i => staffBlocked(i.path)))).map(section => (
                 <div key={section.title} className="mb-1">
                   <p className="text-[10px] font-bold uppercase tracking-[0.14em] px-3 pt-3 pb-1.5" style={{ color: 'var(--k-faint)' }}>
                     {section.title}
                   </p>
-                  {section.items.map(({ icon: Icon, label, path }) => {
+                  {section.items.filter(i => !isStaff(roles) || !staffBlocked(i.path)).map(({ icon: Icon, label, path }) => {
                     const on = path === '/home' && window.location.pathname.startsWith('/home')
                     return (
                       <button

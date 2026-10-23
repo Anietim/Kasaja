@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { MapPin, MessageCircle, Heart, Package, ChevronLeft, Share2 } from 'lucide-react'
 import { UserTicks } from '@/components/Tick'
 import { supabase } from '@/lib/supabase'
-import { MOCK } from '@/lib/mockData'
 import { getOrCreateConversation } from '@/lib/chat'
 import { toast } from 'sonner'
 
@@ -26,17 +25,15 @@ export default function StoreProfile() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    if (!id || id === 'demo') {
-      setStore(MOCK.store); setProducts(MOCK.products.slice(0, 8)); setLoading(false); return
-    }
+    if (!id) { setStore(null); setProducts([]); setLoading(false); return }
     const storeRes = await supabase.from('stores').select('*, market:ng_markets(name)').eq('id', id).single()
     const prodRes = await supabase.from('products').select('id, title, price_kobo, images, likes_count, price_type').eq('store_id', id).eq('status', 'active').limit(20)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (storeRes.data) setStore(storeRes.data)
-    else setStore(MOCK.store)
+    else setStore(null)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     if (prodRes.data && prodRes.data.length > 0) setProducts(prodRes.data)
-    else setProducts(MOCK.products.slice(0, 8))
+    else setProducts([])
     setLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
@@ -48,6 +45,14 @@ export default function StoreProfile() {
   if (loading) return (
     <div className="min-h-screen bg-canvas flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!store) return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center px-6" style={{ color: 'var(--k-text)' }}>
+      <p className="text-lg font-extrabold">Store not found</p>
+      <p className="mt-1 text-sm" style={{ color: 'var(--k-muted)' }}>This store may have been removed.</p>
+      <button onClick={() => void navigate(-1)} className="mt-4 h-10 px-5 rounded-xl text-sm font-extrabold" style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>Go back</button>
     </div>
   )
 

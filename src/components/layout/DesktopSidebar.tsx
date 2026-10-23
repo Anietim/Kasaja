@@ -3,6 +3,7 @@ import { Plus, Moon, Sun } from 'lucide-react'
 import { KasajaK } from '@/components/layout/KasajaLogo'
 import { SECTIONS, ROLE_NAMES } from '@/components/layout/NavDrawer'
 import { useAuth } from '@/hooks/useAuth'
+import { isStaff, staffBlocked } from '@/lib/staff'
 import { useUnreadMessages } from '@/hooks/useUnreadMessages'
 import { useTheme } from '@/hooks/useTheme'
 import { useNewFeed } from '@/hooks/useNewFeed'
@@ -19,10 +20,10 @@ export default function DesktopSidebar() {
 
   const roles: string[] = profile?.roles ?? []
   const isAdmin = roles.some(r => ['admin', 'investigation_admin', 'super_admin'].includes(r))
-  const canSell = roles.includes('seller') || roles.includes('independent')
+  const canSell = !isAdmin && (roles.includes('seller') || roles.includes('independent'))
   const canSee = (title: string) =>
       title === 'Seller' ? canSell
-    : title === 'Rider' ? roles.includes('rider')
+    : title === 'Rider' ? !isAdmin && roles.includes('rider')
     : title === 'Admin' ? isAdmin
     : true
   const name = profile?.display_name || 'Your Profile'
@@ -63,10 +64,10 @@ export default function DesktopSidebar() {
       )}
 
       <nav className="flex-1 overflow-y-auto no-scrollbar px-3 pb-4 pt-1">
-        {SECTIONS.filter(s => canSee(s.title)).map(section => (
+        {SECTIONS.filter(s => canSee(s.title) && !(isStaff(roles) && s.title !== 'Admin' && s.items.every(i => staffBlocked(i.path)))).map(section => (
           <div key={section.title} className="mb-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] px-3 pt-3 pb-1.5" style={{ color: 'var(--k-faint)' }}>{section.title}</p>
-            {section.items.map(({ icon: Icon, label, path }) => (
+            {section.items.filter(i => !isStaff(roles) || !staffBlocked(i.path)).map(({ icon: Icon, label, path }) => (
               <NavLink
                 key={path + label}
                 to={path}

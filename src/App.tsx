@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react'
 // Layout
 import AppLayout from './components/layout/AppLayout'
 import AuthGuard from './components/layout/AuthGuard'
+import StaffGuard from './components/StaffGuard'
 
 // Auth (not lazy — needed immediately)
 import GroupFeed     from './pages/GroupFeed'
@@ -13,7 +14,6 @@ import QuickLogin    from './pages/QuickLogin'
 import SecuritySetup from './pages/SecuritySetup'
 import Settings      from './pages/Settings'
 import Splash        from './pages/auth/Splash'
-import Landing from './pages/Landing'
 import Login         from './pages/Login'
 import AccountType   from './pages/AccountType'
 import Onboarding    from './pages/Onboarding'
@@ -55,6 +55,8 @@ const AdminDisputes      = lazy(() => import('./pages/AdminDisputes'))
 const AdminAnalytics     = lazy(() => import('./pages/AdminAnalytics'))
 const AdminUsers         = lazy(() => import('./pages/AdminUsers'))
 const AdminVerifications = lazy(() => import('./pages/AdminVerifications'))
+const VerifyId = lazy(() => import('./pages/VerifyId'))
+const AdminIdChecks = lazy(() => import('./pages/AdminIdChecks'))
 const SellerVerification = lazy(() => import('./pages/SellerVerification'))
 const RiderVerification  = lazy(() => import('./pages/RiderVerification'))
 const DeliveryFlow       = lazy(() => import('./pages/DeliveryFlow'))
@@ -95,9 +97,7 @@ export default function App() {
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* Auth flow */}
-          
           <Route path="/"                         element={<Splash />} />
-          <Route path="/welcome"                  element={<Landing />} />
           <Route path="/login"                    element={<Login />} />
           <Route path="/onboarding"               element={<Onboarding />} />
           <Route path="/onboard/account-type"     element={<AccountType />} />
@@ -111,18 +111,18 @@ export default function App() {
           <Route path="/quick-login"              element={<QuickLogin />} />
           <Route path="/security-setup"           element={<SecuritySetup />} />
           <Route path="/activity-log"             element={<ActivityLog />} />
-          <Route path="/post-story"               element={<PostStory />} />
-          <Route path="/referral"                 element={<Referral />} />
+          <Route path="/post-story"               element={<StaffGuard><PostStory /></StaffGuard>} />
+          <Route path="/referral"                 element={<StaffGuard><Referral /></StaffGuard>} />
           <Route path="/dispute/:id"              element={<DisputeDetail />} />
-          <Route path="/live"                     element={<LiveSell />} />
+          <Route path="/live"                     element={<StaffGuard><LiveSell /></StaffGuard>} />
 
           {/* Main app — auth guard + shared layout */}
           <Route element={<AuthGuard />}>
           <Route element={<AppLayout />}>
             <Route path="/home"              element={<Suspense fallback={<PageLoader />}><Home /></Suspense>} />
-            <Route path="/orders"            element={<Suspense fallback={<PageLoader />}><MyOrders /></Suspense>} />
-            <Route path="/cart"              element={<Suspense fallback={<PageLoader />}><Cart /></Suspense>} />
-            <Route path="/checkout"          element={<Suspense fallback={<PageLoader />}><Checkout /></Suspense>} />
+            <Route path="/orders"            element={<StaffGuard><Suspense fallback={<PageLoader />}><MyOrders /></Suspense></StaffGuard>} />
+            <Route path="/cart"              element={<StaffGuard><Suspense fallback={<PageLoader />}><Cart /></Suspense></StaffGuard>} />
+            <Route path="/checkout"          element={<StaffGuard><Suspense fallback={<PageLoader />}><Checkout /></Suspense></StaffGuard>} />
             <Route path="/store/:id"         element={<Suspense fallback={<PageLoader />}><StoreProfile /></Suspense>} />
             <Route path="/product/:id"       element={<Suspense fallback={<PageLoader />}><ProductDetail /></Suspense>} />
             <Route path="/markets"           element={<Suspense fallback={<PageLoader />}><MarketBrowser /></Suspense>} />
@@ -133,20 +133,20 @@ export default function App() {
             <Route path="/groups/:id"        element={<GroupFeed />} />
             <Route path="/inbox"             element={<Suspense fallback={<PageLoader />}><Inbox /></Suspense>} />
             <Route path="/inbox/:id"         element={<Suspense fallback={<PageLoader />}><ChatThread /></Suspense>} />
-            <Route path="/request-delivery"  element={<Suspense fallback={<PageLoader />}><RequestDelivery /></Suspense>} />
-            <Route path="/delivery/new"      element={<Suspense fallback={<PageLoader />}><RequestDelivery /></Suspense>} />
-            <Route path="/delivery/radar"    element={<Suspense fallback={<PageLoader />}><RiderRadar /></Suspense>} />
+            <Route path="/request-delivery"  element={<StaffGuard><Suspense fallback={<PageLoader />}><RequestDelivery /></Suspense></StaffGuard>} />
+            <Route path="/delivery/new"      element={<StaffGuard><Suspense fallback={<PageLoader />}><RequestDelivery /></Suspense></StaffGuard>} />
+            <Route path="/delivery/radar"    element={<StaffGuard><Suspense fallback={<PageLoader />}><RiderRadar /></Suspense></StaffGuard>} />
             <Route path="/delivery/:id"      element={<Suspense fallback={<PageLoader />}><DeliveryFlow /></Suspense>} />
-            <Route path="/rider"             element={<Suspense fallback={<PageLoader />}><RiderDashboard /></Suspense>} />
-            <Route path="/wallet"            element={<Suspense fallback={<PageLoader />}><WalletPage /></Suspense>} />
-            <Route path="/wallet/rider"      element={<Suspense fallback={<PageLoader />}><RiderWallet /></Suspense>} />
-            <Route path="/sell"              element={<Suspense fallback={<PageLoader />}><ProductForm /></Suspense>} />
-            <Route path="/sell/product"      element={<Suspense fallback={<PageLoader />}><ProductForm /></Suspense>} />
+            <Route path="/rider"             element={<StaffGuard><Suspense fallback={<PageLoader />}><RiderDashboard /></Suspense></StaffGuard>} />
+            <Route path="/wallet"            element={<StaffGuard><Suspense fallback={<PageLoader />}><WalletPage /></Suspense></StaffGuard>} />
+            <Route path="/wallet/rider"      element={<StaffGuard><Suspense fallback={<PageLoader />}><RiderWallet /></Suspense></StaffGuard>} />
+            <Route path="/sell"              element={<StaffGuard><Suspense fallback={<PageLoader />}><ProductForm /></Suspense></StaffGuard>} />
+            <Route path="/sell/product"      element={<StaffGuard><Suspense fallback={<PageLoader />}><ProductForm /></Suspense></StaffGuard>} />
             <Route path="/receipt/:id"       element={<Suspense fallback={<PageLoader />}><Receipt /></Suspense>} />
-            <Route path="/request-rider"     element={<Suspense fallback={<PageLoader />}><RequestRider /></Suspense>} />
-            <Route path="/rider/jobs"        element={<Suspense fallback={<PageLoader />}><RiderJobs /></Suspense>} />
-            <Route path="/find-rider/:id"    element={<Suspense fallback={<PageLoader />}><FindRider /></Suspense>} />
-            <Route path="/store/dashboard"   element={<Suspense fallback={<PageLoader />}><StoreOwnerDashboard /></Suspense>} />
+            <Route path="/request-rider"     element={<StaffGuard><Suspense fallback={<PageLoader />}><RequestRider /></Suspense></StaffGuard>} />
+            <Route path="/rider/jobs"        element={<StaffGuard><Suspense fallback={<PageLoader />}><RiderJobs /></Suspense></StaffGuard>} />
+            <Route path="/find-rider/:id"    element={<StaffGuard><Suspense fallback={<PageLoader />}><FindRider /></Suspense></StaffGuard>} />
+            <Route path="/store/dashboard"   element={<StaffGuard><Suspense fallback={<PageLoader />}><StoreOwnerDashboard /></Suspense></StaffGuard>} />
             <Route path="/profile"           element={<Suspense fallback={<PageLoader />}><Profile /></Suspense>} />
             <Route path="/profile/:id"       element={<Suspense fallback={<PageLoader />}><PublicProfile /></Suspense>} />
             <Route path="/people"            element={<Suspense fallback={<PageLoader />}><FindPeople /></Suspense>} />
@@ -157,10 +157,12 @@ export default function App() {
             <Route path="/admin/disputes"    element={<Suspense fallback={<PageLoader />}><AdminDisputes /></Suspense>} />
             <Route path="/admin/analytics"   element={<Suspense fallback={<PageLoader />}><AdminAnalytics /></Suspense>} />
             <Route path="/admin/users"          element={<Suspense fallback={<PageLoader />}><AdminUsers /></Suspense>} />
+            <Route path="/admin/id-checks"    element={<Suspense fallback={<PageLoader />}><AdminIdChecks /></Suspense>} />
             <Route path="/admin/verifications" element={<Suspense fallback={<PageLoader />}><AdminVerifications /></Suspense>} />
             </Route> 
-            <Route path="/seller-verification" element={<Suspense fallback={<PageLoader />}><SellerVerification /></Suspense>} />
-            <Route path="/rider-verification"  element={<Suspense fallback={<PageLoader />}><RiderVerification /></Suspense>} />
+            <Route path="/verify-id"         element={<StaffGuard><Suspense fallback={<PageLoader />}><VerifyId /></Suspense></StaffGuard>} />
+            <Route path="/seller-verification" element={<StaffGuard><Suspense fallback={<PageLoader />}><SellerVerification /></Suspense></StaffGuard>} />
+            <Route path="/rider-verification"  element={<StaffGuard><Suspense fallback={<PageLoader />}><RiderVerification /></Suspense></StaffGuard>} />
           </Route>
           </Route>{/* /AuthGuard */}
 

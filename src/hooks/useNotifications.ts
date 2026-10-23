@@ -13,16 +13,6 @@ export interface AppNotification {
   avatar?: string
 }
 
-const DEV_MOCK: AppNotification[] = [
-  { id: '1', type: 'message', title: 'New message from Amara', body: 'Is this item still available?', read: false, link: '/inbox', created_at: new Date(Date.now() - 2 * 60000).toISOString() },
-  { id: '2', type: 'order', title: 'Order confirmed', body: 'Your order #KJ-2891 has been confirmed by the seller.', read: false, link: '/orders', created_at: new Date(Date.now() - 15 * 60000).toISOString() },
-  { id: '3', type: 'bid', title: 'Rider bid received', body: 'Emeka (⭐4.9) offered ₦1,800 for your delivery.', read: false, link: '/delivery', created_at: new Date(Date.now() - 30 * 60000).toISOString() },
-  { id: '4', type: 'group_reply', title: 'Price reply in Balogun Market', body: 'Seller replied: "Ankara 6 yards — ₦4,500"', read: false, link: '/groups/demo-group-id', created_at: new Date(Date.now() - 60 * 60000).toISOString() },
-  { id: '5', type: 'payment', title: 'Payment received', body: '₦12,500 received for your Xiaomi Redmi Note 13 listing.', read: true, link: '/store/dashboard', created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: '6', type: 'delivery', title: 'Rider picked up your order', body: 'Tunde is on the way. ETA: 22 minutes.', read: true, link: '/orders', created_at: new Date(Date.now() - 3 * 3600000).toISOString() },
-  { id: '7', type: 'price_offer', title: 'Counter offer received', body: 'Buyer countered ₦8,000 on your Samsung Galaxy A15.', read: true, link: '/store/dashboard', created_at: new Date(Date.now() - 5 * 3600000).toISOString() },
-  { id: '8', type: 'system', title: 'Store verified ✓', body: 'Congratulations! Your store has been verified.', read: true, created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
-]
 
 // Every part of the app that calls useNotifications() (the bell, the panel) shares one list,
 // so opening notifications updates the bell's count right away.
@@ -46,7 +36,7 @@ export function useNotifications() {
 
   const load = useCallback(async () => {
     if (import.meta.env.DEV) {
-      setNotifications(DEV_MOCK)
+      setNotifications([])
       setLoading(false)
       return
     }
