@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Heart, Star, MapPin, Package, Plus } from 'lucide-react'
+import { Heart, MapPin, Package, Plus } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { StoryViewer } from '@/components/StoryViewer'
@@ -9,11 +9,12 @@ import { useDesk } from '@/hooks/useDesk'
 import ScrollRow from '@/components/home/ScrollRow'
 import { ArrowUp } from 'lucide-react'
 import { useNewFeed, markFeedSeen } from '@/hooks/useNewFeed'
+import { UserTicks } from '@/components/Tick'
 
 interface Product {
   id: string; title: string; price_kobo: number; price_type: string
   images: string[]; category: string
-  store: { name: string; is_verified: boolean }
+  store: { name: string; is_verified: boolean; owner_id?: string }
   likes_count: number; location?: string
 }
 
@@ -76,7 +77,7 @@ export default function Home() {
     setLoading(true)
     let q = supabase
       .from('products')
-      .select('id,title,price_kobo,price_type,images,category,likes_count,store:stores(name,is_verified)')
+      .select('id,title,price_kobo,price_type,images,category,likes_count,store:stores(name,is_verified,owner_id)')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(30)
@@ -178,8 +179,8 @@ useEffect(() => {
                       : initials(s.display_name)}
                   </span>
                 </span>
-                <span className="text-[11px] truncate w-full text-center" style={{ color: s.has_new ? 'var(--k-text)' : 'var(--k-muted)' }}>
-                  {s.display_name.split(' ')[0]}
+                <span className="text-[11px] w-full flex items-center justify-center gap-0.5 min-w-0" style={{ color: s.has_new ? 'var(--k-text)' : 'var(--k-muted)' }}>
+                  <span className="truncate">{s.display_name.split(' ')[0]}</span><UserTicks userId={s.user_id} size={11} plain />
                 </span>
               </motion.button>
             ))}
@@ -317,8 +318,8 @@ useEffect(() => {
                   <div className="px-3.5 pt-3 pb-3.5">
                     <p className="text-sm font-bold leading-snug line-clamp-2" style={{ color: 'var(--k-text)' }}>{p.title}</p>
                     <div className="flex items-center gap-1 mt-1 mb-2.5 min-w-0">
-                      {p.store?.is_verified && <Star size={11} className="fill-yellow-400 text-yellow-400 shrink-0" />}
                       <span className="text-xs truncate" style={{ color: 'var(--k-muted)' }}>{p.store?.name ?? 'Store'}</span>
+                      <UserTicks userId={p.store?.owner_id} size={13} plain legacyVerified={!!p.store?.is_verified} />
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-mono text-[15px] tabular-nums" style={{ color: 'var(--k-accent)' }}>{fmt(p.price_kobo)}</p>

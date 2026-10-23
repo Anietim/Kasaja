@@ -4,6 +4,7 @@ import { AlertTriangle, MessageSquare, CheckCircle, ChevronRight, Search, Shield
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { formatNaira } from '@/lib/paystack'
+import { UserTicks } from '@/components/Tick'
 
 type Dispute = {
   id: string
@@ -11,6 +12,8 @@ type Dispute = {
   reason: string
   status: 'open' | 'under_review' | 'resolved_buyer' | 'resolved_seller' | 'closed'
   created_at: string
+  buyer_id?: string
+  seller_id?: string
   buyer: { display_name: string; phone: string }
   seller: { display_name: string; phone: string }
   order: { total_kobo: number; status: string }
@@ -202,7 +205,7 @@ export default function AdminDisputes() {
                   <p className="text-sm font-medium text-ink truncate">{d.reason}</p>
                 </div>
                 <p className="text-xs text-ink-muted">
-                  {d.buyer?.display_name} vs {d.seller?.display_name}
+                  <span className="inline-flex items-center gap-1">{d.buyer?.display_name}<UserTicks userId={d.buyer_id} size={12} /></span> vs <span className="inline-flex items-center gap-1">{d.seller?.display_name}<UserTicks userId={d.seller_id} size={12} /></span>
                 </p>
                 <p className="text-xs text-ink-muted mt-0.5">
                   Order #{d.order_id?.slice(0, 8)} · {formatNaira(d.order?.total_kobo ?? 0)}
@@ -255,12 +258,12 @@ export default function AdminDisputes() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-canvas rounded-xl p-3">
                 <p className="text-xs text-ink-muted mb-1">Buyer</p>
-                <p className="text-sm font-medium text-ink">{selected.buyer?.display_name}</p>
+                <p className="text-sm font-medium text-ink flex items-center gap-1">{selected.buyer?.display_name}<UserTicks userId={selected.buyer_id} size={14} /></p>
                 <p className="text-xs text-ink-muted">{selected.buyer?.phone}</p>
               </div>
               <div className="bg-canvas rounded-xl p-3">
                 <p className="text-xs text-ink-muted mb-1">Seller</p>
-                <p className="text-sm font-medium text-ink">{selected.seller?.display_name}</p>
+                <p className="text-sm font-medium text-ink flex items-center gap-1">{selected.seller?.display_name}<UserTicks userId={selected.seller_id} size={14} /></p>
                 <p className="text-xs text-ink-muted">{selected.seller?.phone}</p>
               </div>
             </div>

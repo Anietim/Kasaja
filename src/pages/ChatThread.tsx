@@ -11,6 +11,7 @@ import {
   CheckCheck, Check, Smile, Trash2, Forward, Play, Pause,
   MoreVertical, Phone, Video, Search
 } from 'lucide-react'
+import { UserTicks } from '@/components/Tick'
 
 const DEV = import.meta.env.DEV
 const DEV_ID = 'dev-super-admin-id'
@@ -318,7 +319,7 @@ export default function ChatThread() {
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900" />
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-white text-sm truncate">{conv.other.display_name}</p>
+              <p className="font-semibold text-white text-sm flex items-center gap-1"><span className="truncate">{conv.other.display_name}</span><UserTicks userId={conv.other.id} size={14} /></p>
               <p className="text-xs text-zinc-500">
                 {typingUsers.length > 0 ? (
                   <span className="text-brand-400 animate-pulse">typing...</span>

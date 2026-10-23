@@ -5,6 +5,7 @@ import { ArrowLeft, Minus, Plus, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import RiderMap, { type MapPin } from '@/components/RiderMap'
 import AddressInput, { type Place } from '@/components/AddressInput'
+import { UserTicks } from '@/components/Tick'
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
 const LAGOS = { lat: 6.5244, lng: 3.3792 }
@@ -164,7 +165,7 @@ export default function FindRider() {
             return (
               <div key={r.id} className="flex items-center justify-between gap-2 py-2 border-t border-surface-800 text-sm">
                 <div className="min-w-0">
-                  <p className="text-white truncate">{r.display_name || 'Rider'} <span className="text-neutral-500 capitalize">· {r.vehicle_type}</span></p>
+                  <p className="text-white flex items-center gap-1"><span className="truncate">{r.display_name || 'Rider'}</span><UserTicks userId={r.id} size={14} /><span className="text-neutral-500 capitalize">· {r.vehicle_type}</span></p>
                   <p className="text-xs text-neutral-500">{d !== null ? `${d.toFixed(1)} km from pickup` : (r.work_area || 'Location not shared')} · ★ {Number(r.avg_rating || 0).toFixed(1)}</p>
                 </div>
                 {!jobId && (

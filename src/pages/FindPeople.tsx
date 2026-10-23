@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowLeft, Search as SearchIcon, X, BadgeCheck, MapPin, Loader2 } from 'lucide-react'
+import { ArrowLeft, Search as SearchIcon, X, MapPin, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 
 interface Person {
   id: string
@@ -105,7 +106,7 @@ export default function FindPeople() {
                   <div className="min-w-0">
                     <p className="text-white text-sm font-semibold flex items-center gap-1 truncate">
                       {name}
-                      {p.is_verified && <BadgeCheck size={14} className="text-brand-500 shrink-0" />}
+                      <UserTicks userId={p.id} size={14} plain legacyVerified={!!p.is_verified} />
                     </p>
                     {p.store_name && <p className="text-neutral-300 text-xs truncate">{p.store_name}</p>}
                     <p className="text-neutral-500 text-xs flex items-center gap-1 truncate">

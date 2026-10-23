@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 
 type Tab = 'sellers' | 'riders' | 'shoppers'
 type Person = {
@@ -144,7 +145,7 @@ export default function WhoToFollow() {
                     ? <img src={p.avatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
                     : <span className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-extrabold" style={{ background: 'var(--k-surface2)', color: 'var(--k-text)' }}>{p.name[0]?.toUpperCase()}</span>}
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-bold truncate" style={{ color: 'var(--k-text)' }}>{p.name}</span>
+                    <span className="block text-[13px] font-bold truncate" style={{ color: 'var(--k-text)' }}><span className="flex items-center gap-1"><span className="truncate">{p.name}</span><UserTicks userId={p.followId} size={13} plain /></span></span>
                     <span className="block text-[11px] truncate" style={{ color: 'var(--k-muted)' }}>{p.sub}</span>
                   </span>
                 </button>

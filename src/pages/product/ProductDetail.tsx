@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowLeft, ShoppingCart, MessageSquare, Store, BadgeCheck, Loader2, MapPin } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, MessageSquare, Store, Loader2, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { getOrCreateConversation } from '@/lib/chat'
+import { UserTicks } from '@/components/Tick'
 
 interface ProductRow {
   id: string
@@ -111,7 +112,7 @@ export default function ProductDetail() {
           {p.store && (
             <button onClick={() => void navigate(`/store/${p.store!.id}`)} className="w-full flex items-center gap-3 bg-surface-900 rounded-2xl p-4 text-left">
               <Store className="text-brand-500" size={20} />
-              <span className="flex-1 text-white font-semibold flex items-center gap-1">{p.store.name}{p.store.is_verified && <BadgeCheck size={14} className="text-brand-500" />}</span>
+              <span className="flex-1 text-white font-semibold flex items-center gap-1">{p.store.name}<UserTicks userId={p.store.owner_id} size={16} plain legacyVerified={!!p.store.is_verified} /></span>
               <span className="text-xs text-neutral-400">View store</span>
             </button>
           )}

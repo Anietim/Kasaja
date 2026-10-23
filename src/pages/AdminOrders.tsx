@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { Shield, Package, AlertCircle, CheckCircle, Clock, Search, Filter } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { MOCK } from '@/lib/mockData'
+import { UserTicks } from '@/components/Tick'
 
 interface Order {
   id: string; created_at: string; status: string; total_kobo: number
+  buyer_id?: string
   buyer: { display_name: string; phone?: string }
   store: { name: string }; payment_route: string
 }
@@ -94,7 +96,7 @@ export default function AdminOrders() {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-white text-sm font-semibold">{o.store?.name ?? 'Unknown Store'}</p>
-                <p className="text-muted text-xs">{o.buyer?.display_name} {o.buyer?.phone && `• ${o.buyer.phone}`}</p>
+                <p className="text-muted text-xs flex items-center gap-1">{o.buyer?.display_name}<UserTicks userId={o.buyer_id} size={12} /> {o.buyer?.phone && `• ${o.buyer.phone}`}</p>
               </div>
               <div className={`flex items-center gap-1 text-xs font-medium ${
                 o.status === 'disputed' ? 'text-red-400' :

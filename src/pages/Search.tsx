@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search as SearchIcon, SlidersHorizontal, X, MapPin, Tag, ArrowLeft, Star, ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { UserTicks } from '@/components/Tick'
 
 const CATEGORIES = ['All','Electronics','Fashion','Food','Auto Parts','Building Materials',
   'Phones','Computers','Furniture','Textiles','Jewellery','Health & Beauty',
@@ -27,7 +28,7 @@ interface Product {
   location: string
   avg_rating: number
   rating_count: number
-  store: { name: string; is_verified: boolean } | null
+  store: { name: string; is_verified: boolean; owner_id?: string } | null
 }
 
 interface State { id: string; name: string; code: string }
@@ -86,7 +87,7 @@ export default function Search() {
 
       let qb = supabase
         .from('products')
-        .select('id,title,price_kobo,is_negotiable,condition,category,images,location,avg_rating,rating_count,stores(name,is_verified)')
+        .select('id,title,price_kobo,is_negotiable,condition,category,images,location,avg_rating,rating_count,stores(name,is_verified,owner_id)')
         .eq('is_active', true)
 
       if (q.trim()) qb = qb.ilike('title', `%${q.trim()}%`)
@@ -388,7 +389,7 @@ export default function Search() {
                   </div>
                 </div>
                 {product.store && (
-                  <p className="text-xs text-ink-muted mt-1 truncate">{product.store.name}</p>
+                  <p className="text-xs text-ink-muted mt-1 flex items-center gap-1"><span className="truncate">{product.store.name}</span><UserTicks userId={product.store.owner_id} size={13} plain legacyVerified={!!product.store.is_verified} /></p>
                 )}
               </div>
             </button>

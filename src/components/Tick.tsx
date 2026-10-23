@@ -109,8 +109,10 @@ export function ticksFor(row: Row | null): TickKind[] {
 }
 
 /** Every tick a person has, in order: black ID tick, paid role ticks, earned tick. Tap one to see what was checked. */
-export function UserTicks({ userId, size = 18, compact = false, legacyVerified = false }: {
+export function UserTicks({ userId, size = 18, compact = false, legacyVerified = false, plain = false }: {
   userId?: string | null; size?: number
+  /** not tappable: use inside a button or link */
+  plain?: boolean
   /** cards and chat: show only the highest paid tick */
   compact?: boolean
   /** old stores.is_verified flag: shows the seller tick if nothing else loads */
@@ -149,11 +151,13 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
   return (
     <>
       <span className="inline-flex items-center gap-1 align-middle">
-        {shown.map(k => (
-          <button key={k} type="button" onClick={e => { e.stopPropagation(); setOpen(k) }} aria-label={TICK_INFO[k].title} className="inline-flex">
-            <KTick kind={k} size={size} />
-          </button>
-        ))}
+        {shown.map(k => plain
+          ? <span key={k} className="inline-flex" title={TICK_INFO[k].title}><KTick kind={k} size={size} /></span>
+          : (
+            <button key={k} type="button" onClick={e => { e.stopPropagation(); setOpen(k) }} aria-label={TICK_INFO[k].title} className="inline-flex">
+              <KTick kind={k} size={size} />
+            </button>
+          ))}
       </span>
       {open && <TickSheet kind={open} onClose={() => setOpen(null)} />}
     </>

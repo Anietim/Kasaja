@@ -12,6 +12,18 @@ import '@/styles/kasaja-theme.css'
 const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const FIELD = { background: 'var(--k-surface)', border: '1px solid var(--k-line)', color: 'var(--k-text)' }
 
+function Shell({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
+  return (
+    <div className="min-h-dvh pb-24" style={{ background: 'var(--k-bg)', color: 'var(--k-text)' }}>
+      <div className="max-w-md mx-auto px-5 pt-4">
+        <button onClick={() => void navigate(-1)} aria-label="Back" className="w-10 h-10 -ml-2 flex items-center justify-center rounded-full"><ArrowLeft size={20} /></button>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function VerifyId() {
   const navigate = useNavigate()
   const { user, profile } = useAuth()
@@ -97,15 +109,6 @@ export default function VerifyId() {
       toast.error(e instanceof Error ? e.message : (e as { message?: string })?.message ?? 'Could not submit')
     } finally { setBusy(false) }
   }
-
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-dvh pb-24" style={{ background: 'var(--k-bg)', color: 'var(--k-text)' }}>
-      <div className="max-w-md mx-auto px-5 pt-4">
-        <button onClick={() => void navigate(-1)} aria-label="Back" className="w-10 h-10 -ml-2 flex items-center justify-center rounded-full"><ArrowLeft size={20} /></button>
-        {children}
-      </div>
-    </div>
-  )
 
   if (loading) return <Shell><div className="py-24 flex justify-center"><Loader2 className="animate-spin" /></div></Shell>
 

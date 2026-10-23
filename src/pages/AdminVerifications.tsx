@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, XCircle, Eye, Store, Bike, RefreshCw, Search, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { UserTicks } from '@/components/Tick'
 
 interface Application {
   id: string
@@ -225,7 +226,7 @@ export default function AdminVerifications() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-white truncate">{app.full_name}</p>
+                      <p className="text-sm font-semibold text-white flex items-center gap-1"><span className="truncate">{app.full_name}</span><UserTicks userId={app.user_id} size={14} /></p>
                       <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: app.type === 'seller' ? 'rgba(124,58,237,0.2)' : 'rgba(6,182,212,0.2)', color: app.type === 'seller' ? '#a78bfa' : '#06B6D4' }}>
                         {app.type === 'seller' ? <><Store size={9} className="inline mr-1" />Seller</> : <><Bike size={9} className="inline mr-1" />Rider</>}
                       </span>

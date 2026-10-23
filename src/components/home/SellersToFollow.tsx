@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 
 type Seller = { id: string; owner_id: string; name: string; logo_url: string | null; state: string | null }
 
@@ -47,7 +48,7 @@ export default function SellersToFollow() {
               ? <img src={s.logo_url} alt="" className="w-9 h-9 rounded-full object-cover" />
               : <span className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-extrabold" style={{ background: 'var(--k-surface2)', color: 'var(--k-text)' }}>{s.name[0]?.toUpperCase()}</span>}
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold truncate" style={{ color: 'var(--k-text)' }}>{s.name}</p>
+              <p className="text-[13px] font-bold flex items-center gap-1" style={{ color: 'var(--k-text)' }}><span className="truncate">{s.name}</span><UserTicks userId={s.owner_id} size={13} /></p>
               <p className="text-[11px] truncate" style={{ color: 'var(--k-muted)' }}>{s.state ?? 'Seller'}</p>
             </div>
             <button

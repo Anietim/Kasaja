@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import RiderMap, { type MapPin } from '@/components/RiderMap'
 import AddressInput, { type Place } from '@/components/AddressInput'
 import { useDesk } from '@/hooks/useDesk'
+import { UserTicks } from '@/components/Tick'
 
 const LAGOS = { lat: 6.5244, lng: 3.3792 }
 const naira = (n: number) => `₦${n.toLocaleString('en-NG')}`
@@ -266,7 +267,7 @@ export default function RequestRider() {
                   <div key={r.id} className="flex items-center gap-3 py-3" style={{ borderTop: '1px solid var(--k-line)' }}>
                     <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: 'var(--k-surface2)' }}>{vehicleIcon(r.vehicle_type)}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-white text-sm font-bold truncate">{r.display_name || 'Rider'} <span className="font-medium capitalize" style={{ color: '#A59DA8' }}>· {r.vehicle_type}</span></p>
+                      <p className="text-white text-sm font-bold flex items-center gap-1"><span className="truncate">{r.display_name || 'Rider'}</span><UserTicks userId={r.id} size={14} /><span className="font-medium capitalize" style={{ color: '#A59DA8' }}>· {r.vehicle_type}</span></p>
                       <p className="text-xs truncate" style={{ color: '#A59DA8' }}>
                         {d !== null ? `${d.toFixed(1)} km from pickup` : (r.work_area || 'Location not shared')} · ★ {Number(r.avg_rating || 0).toFixed(1)}
                       </p>

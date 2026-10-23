@@ -4,6 +4,7 @@ import { Package, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useDesk } from '@/hooks/useDesk'
+import { UserTicks } from '@/components/Tick'
 
 type Item = {
   id: string
@@ -83,7 +84,7 @@ export default function FollowingFeed() {
               </div>
               <div className="px-3.5 pt-3 pb-3.5">
                 <p className="text-sm font-bold line-clamp-1" style={{ color: 'var(--k-text)' }}>{p.title}</p>
-                <p className="text-xs mt-0.5 mb-2 line-clamp-1" style={{ color: 'var(--k-muted)' }}>{p.store?.name}</p>
+                <p className="text-xs mt-0.5 mb-2 flex items-center gap-1" style={{ color: 'var(--k-muted)' }}><span className="truncate">{p.store?.name}</span><UserTicks userId={p.store?.owner_id} size={12} plain /></p>
                 <p className="font-mono text-[15px] tabular-nums" style={{ color: 'var(--k-accent)' }}>{naira(p.price_kobo)}</p>
               </div>
             </button>

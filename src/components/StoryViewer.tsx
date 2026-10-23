@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { getOrCreateConversation } from '@/lib/chat'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 
 interface Story {
   id: string
@@ -237,7 +238,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
               )}
             </div>
             <div className="flex-1 min-w-0" onClick={() => { onClose(); void navigate(`/profile/${currentGroup.userId}`) }}>
-              <p className="text-white font-semibold text-sm truncate">{currentGroup.userName}</p>
+              <p className="text-white font-semibold text-sm flex items-center gap-1"><span className="truncate">{currentGroup.userName}</span><UserTicks userId={currentGroup.userId} size={14} plain /></p>
               <p className="text-white/60 text-xs">{timeAgo(currentStory.created_at)}</p>
             </div>
             <button onClick={() => setMuted(m => !m)} className="p-1.5 text-white/70">
@@ -279,7 +280,7 @@ export function StoryViewer({ groups, initialGroupIndex, onClose }: StoryViewerP
                         ? <img src={v.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
                         : (v.profiles?.display_name || 'U')[0]?.toUpperCase()}
                     </div>
-                    <span className="flex-1 text-white text-sm">{v.profiles?.display_name || 'KASAJA user'}</span>
+                    <span className="flex-1 text-white text-sm flex items-center gap-1">{v.profiles?.display_name || 'KASAJA user'}<UserTicks userId={v.viewer_id} size={13} plain /></span>
                     <span className="text-zinc-400 text-xs">{timeAgo(v.viewed_at)}</span>
                   </div>
                 ))}

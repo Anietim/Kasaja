@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import type { RiderLocation } from '../../types/database'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { UserTicks } from '@/components/Tick'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
 
@@ -93,8 +94,8 @@ export default function RiderRadar() {
               <button onClick={() => setSelected(null)} className="absolute top-2 right-2 text-neutral-400">
                 <X size={14} />
               </button>
-              <div className="font-semibold text-white text-sm mb-2">
-                {selected.rider?.display_name ?? 'Rider'}
+              <div className="font-semibold text-white text-sm mb-2 flex items-center gap-1">
+                {selected.rider?.display_name ?? 'Rider'}<UserTicks userId={selected.rider_id} size={14} />
               </div>
               <div className="flex items-center gap-1 mb-3">
                 <span className="w-2 h-2 rounded-full bg-success" />

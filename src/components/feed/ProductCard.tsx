@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Heart, MessageCircle, MapPin, ShoppingCart } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn, formatNaira } from '../../lib/utils'
-import { VerifiedBadge, TrendingBadge } from '../ui/Badge'
+import { TrendingBadge } from '../ui/Badge'
 import type { Product } from '../../types/database'
+import { UserTicks } from '../Tick'
 
 interface Props {
   product: Product
@@ -88,7 +89,7 @@ export default function ProductCard({ product, onLike, onCart }: Props) {
         {product.store && (
           <div className="flex items-center gap-1.5 mb-2 flex-wrap">
             <span className="text-neutral-400 text-xs truncate max-w-[120px]">{product.store.name}</span>
-            {isVerified && <VerifiedBadge />}
+            <UserTicks userId={product.store.owner_id} size={13} plain legacyVerified={isVerified} />
             {isTrending && <TrendingBadge />}
           </div>
         )}

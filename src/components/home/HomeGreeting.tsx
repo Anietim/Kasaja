@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth'
+import { UserTicks } from '@/components/Tick'
 
 function greeting() {
   const h = new Date().getHours()
@@ -24,7 +25,7 @@ export default function HomeGreeting() {
       )}
       <div>
         <p className="text-[13px]" style={{ color: 'var(--k-muted)' }}>{greeting()}</p>
-        <p className="text-lg font-extrabold tracking-tight leading-tight" style={{ color: 'var(--k-text)' }}>{name}</p>
+        <p className="text-lg font-extrabold tracking-tight leading-tight" style={{ color: 'var(--k-text)' }}>{name}<span className="ml-1.5 align-middle"><UserTicks userId={profile?.id} size={16} /></span></p>
       </div>
     </div>
   )

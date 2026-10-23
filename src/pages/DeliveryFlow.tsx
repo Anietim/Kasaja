@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { formatNaira } from '@/lib/paystack'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { UserTicks } from '@/components/Tick'
 
 interface DeliveryRequest {
   id: string
@@ -217,7 +218,7 @@ export default function DeliveryFlow() {
                 {delivery.rider.display_name?.[0] ?? 'R'}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-ink-50">{delivery.rider.display_name}</p>
+                <p className="font-semibold text-ink-50 flex items-center gap-1">{delivery.rider.display_name}<UserTicks userId={delivery.rider_id} size={16} /></p>
                 <div className="flex items-center gap-1 mt-0.5">
                   <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                   <span className="text-xs text-ink-400">{delivery.rider.rating?.toFixed(1) ?? '5.0'}</span>

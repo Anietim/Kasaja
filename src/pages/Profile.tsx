@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
+import { UserTicks } from '@/components/Tick'
 import {
   Camera, Settings, Star, Package, Truck,
-  ChevronRight, BadgeCheck, Edit3, MapPin, Store,
+  ChevronRight, Edit3, MapPin, Store,
   LogOut, Shield, Heart, ShoppingBag, Grid3X3,
   BarChart2, TrendingUp, MessageCircle
 } from 'lucide-react'
@@ -316,7 +317,7 @@ export default function Profile() {
           ) : (
             <div className="flex items-center justify-center gap-2">
               <h1 className="text-2xl font-black text-white">{profile.display_name ?? 'Anonymous'}</h1>
-              {profile.is_verified && <BadgeCheck size={20} className="text-brand-400 fill-brand-400/20" />}
+              <UserTicks userId={profile.id} size={20} legacyVerified={!!profile.is_verified} />
               <button onClick={() => setEditing(true)}><Edit3 size={15} className="text-muted" /></button>
             </div>
           )}

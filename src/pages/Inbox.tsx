@@ -4,9 +4,10 @@ import { MessageCircle, Search, Package } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { MOCK } from '@/lib/mockData'
+import { UserTicks } from '@/components/Tick'
 
 interface Thread {
-  id: string; other_name: string; other_avatar?: string
+  id: string; other_id?: string; other_name: string; other_avatar?: string
   last_message: string; last_at: string; unread: number
   product_title?: string
 }
@@ -42,7 +43,7 @@ export default function Inbox() {
         const first = (Array.isArray(raw) ? raw[0] : raw) as { display_name?: string; avatar_url?: string } | undefined
         const other = { display_name: first?.display_name || 'KASAJA user', avatar_url: first?.avatar_url }
         return {
-          id: c.id, other_name: other.display_name, other_avatar: other.avatar_url,
+          id: c.id, other_id: isA ? c.participant_b : c.participant_a, other_name: other.display_name, other_avatar: other.avatar_url,
           last_message: c.last_message_preview ?? '', last_at: c.last_message_at, unread: isA ? c.unread_a : c.unread_b,
         }
       })
@@ -114,7 +115,7 @@ export default function Inbox() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-white font-semibold text-sm truncate">{t.other_name}</p>
+                    <p className="text-white font-semibold text-sm flex items-center gap-1"><span className="truncate">{t.other_name}</span><UserTicks userId={t.other_id} size={13} plain /></p>
                     <p className="text-muted text-xs shrink-0 ml-2">{timeAgo(t.last_at)}</p>
                   </div>
                   {t.product_title && (
