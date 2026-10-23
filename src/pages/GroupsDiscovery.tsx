@@ -26,6 +26,7 @@ interface Group {
   weekly_fee_kobo: number
   monthly_fee_kobo: number
   is_active: boolean
+  free_until?: string | null
   market: Market
   is_subscribed?: boolean
   subscription_expires?: string
@@ -36,6 +37,10 @@ type Tier = 'daily' | 'weekly' | 'monthly'
 const fmt = (kobo: number) => `₦${(kobo / 100).toLocaleString('en-NG')}`
 
 const DEV_BYPASS = import.meta.env.DEV
+const isFree = (g: Group) => !!g.free_until && new Date(g.free_until).getTime() > Date.now()
+const freeLabel = (g: Group) => new Date(g.free_until as string).getFullYear() >= 2090
+  ? 'Free for now'
+  : `Free until ${new Date(g.free_until as string).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
 export default function GroupsDiscovery() {
   const navigate = useNavigate()
@@ -51,16 +56,20 @@ export default function GroupsDiscovery() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const { data: groupData } = await supabase
+    const fetchGroups = (extra: string) => supabase
       .from('market_groups')
       .select(`
         id, market_id, name, description, member_count, post_count,
-        daily_fee_kobo, weekly_fee_kobo, monthly_fee_kobo, is_active,
+        daily_fee_kobo, weekly_fee_kobo, monthly_fee_kobo, is_active${extra},
         market:ng_markets(id, name, slug, description, address,
           ng_states(name))
       `)
       .eq('is_active', true)
       .order('member_count', { ascending: false })
+    // free_until exists once super-admin-powers.sql has run; fall back so the list never goes blank
+    let res = await fetchGroups(', free_until')
+    if (res.error) res = await fetchGroups('')
+    const groupData = res.data
 
     if (!groupData) { setLoading(false); return }
 
@@ -257,6 +266,9 @@ export default function GroupsDiscovery() {
 
                 {/* Pricing + actions */}
                 <div className="border-t border-ink-subtle/10 px-4 py-3 flex items-center justify-between gap-3">
+                  {isFree(group) ? (
+                    <div className="text-xs font-bold" style={{ color: 'var(--k-accent)' }}>{freeLabel(group)}. Payment starts after.</div>
+                  ) : (
                   <div className="flex gap-3 text-xs">
                     <span className="text-ink-muted">
                       <span className="text-ink-base font-semibold">{fmt(group.daily_fee_kobo)}</span>/day
@@ -268,9 +280,10 @@ export default function GroupsDiscovery() {
                       <span className="text-ink-base font-semibold">{fmt(group.monthly_fee_kobo)}</span>/mo
                     </span>
                   </div>
+                  )}
 
                   <div className="flex gap-2">
-                    {(group.is_subscribed || DEV_BYPASS) ? (
+                    {(group.is_subscribed || isFree(group) || DEV_BYPASS) ? (
                       <button
                         onClick={() => void navigate(`/groups/${group.id}`)}
                         className="flex items-center gap-1 px-3 py-1.5 bg-brand-500 text-white rounded-xl text-xs font-semibold"

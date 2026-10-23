@@ -16,6 +16,7 @@ interface Group {
   weekly_fee_kobo: number
   monthly_fee_kobo: number
   is_active: boolean
+  free_until?: string | null
   market_id: number
   market: { name: string; ng_states: { name: string } }
 }
@@ -24,7 +25,8 @@ const fmt = (kobo: number) => `₦${(kobo / 100).toLocaleString('en-NG')}`
 
 export default function AdminGroups() {
   const navigate = useNavigate()
-  useAuth()
+  const { profile } = useAuth()
+  const isSuper = (profile?.roles ?? []).includes('super_admin')
   const [groups, setGroups] = useState<Group[]>([])
   const [markets, setMarkets] = useState<Market[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,6 +34,9 @@ export default function AdminGroups() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Group | null>(null)
   const [saving, setSaving] = useState(false)
+  const [freeFor, setFreeFor] = useState<Group | null>(null)
+  const [freeDate, setFreeDate] = useState('')
+  const [freeBusy, setFreeBusy] = useState(false)
 
   // Form state
   const [form, setForm] = useState({
@@ -108,6 +113,21 @@ export default function AdminGroups() {
       else { toast.success('Group created'); setShowForm(false); void load() }
     }
     setSaving(false)
+  }
+
+  const isFree = (g: Group) => !!g.free_until && new Date(g.free_until).getTime() > Date.now()
+  const openFree = (g: Group) => {
+    setFreeFor(g)
+    setFreeDate(g.free_until && new Date(g.free_until).getFullYear() < 2090 ? g.free_until.slice(0, 10) : '')
+  }
+  const setFree = async (until: string | null) => {
+    if (!freeFor) return
+    setFreeBusy(true)
+    const { error } = await supabase.rpc('set_group_free', { group_id: freeFor.id, free_until_date: until })
+    setFreeBusy(false)
+    if (error) { toast.error(error.message); return }
+    toast.success(until === null ? 'Free period ended. Members pay as normal' : 'Group is free')
+    setFreeFor(null); void load()
   }
 
   const toggleActive = async (g: Group) => {
@@ -195,6 +215,11 @@ export default function AdminGroups() {
                         </span>
                       </div>
                       <p className="text-xs text-ink-muted">{g.market?.name} · {(g.market?.ng_states)?.name}</p>
+                      {isFree(g) && (
+                        <p className="text-xs mt-1 font-semibold" style={{ color: 'var(--k-accent)' }}>
+                          {new Date(g.free_until as string).getFullYear() >= 2090 ? 'Free for now' : `Free until ${new Date(g.free_until as string).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}. Payment starts after.`}
+                        </p>
+                      )}
                       <div className="flex items-center gap-3 mt-2 text-xs text-ink-muted">
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" />{g.member_count}</span>
                         <span>{fmt(g.daily_fee_kobo)}/d · {fmt(g.weekly_fee_kobo)}/w · {fmt(g.monthly_fee_kobo)}/mo</span>
@@ -215,6 +240,15 @@ export default function AdminGroups() {
                   >
                     {g.is_active ? <><Pause className="w-3 h-3" /> Pause</> : <><Play className="w-3 h-3" /> Reopen</>}
                   </button>
+                  {isSuper && (
+                    <button
+                      onClick={() => openFree(g)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold"
+                      style={{ background: 'var(--k-accent-soft)', color: 'var(--k-accent)' }}
+                    >
+                      {isFree(g) ? 'Free access' : 'Make free'}
+                    </button>
+                  )}
                   <button
                     onClick={() => void deleteGroup(g)}
                     className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-red-500/10 text-red-400 rounded-xl text-xs"
@@ -227,6 +261,36 @@ export default function AdminGroups() {
           </div>
         )}
       </div>
+
+      {/* Free access (super admin) */}
+      {freeFor && isSuper && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setFreeFor(null)}>
+          <div className="bg-surface rounded-3xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-display font-bold text-ink-base">Free access</h2>
+              <button onClick={() => setFreeFor(null)} className="p-1.5 rounded-xl hover:bg-canvas"><X className="w-5 h-5 text-ink-muted" /></button>
+            </div>
+            <p className="text-sm text-ink-muted mb-4">{freeFor.name}. Members join and post without paying. Choose the day payment starts.</p>
+
+            <label className="text-xs font-semibold text-ink-muted mb-1.5 block" htmlFor="free-date">Payment starts on</label>
+            <input id="free-date" type="date" value={freeDate} min={new Date().toISOString().slice(0, 10)} onChange={e => setFreeDate(e.target.value)}
+              className="w-full bg-canvas rounded-xl border border-ink-subtle/20 px-4 py-2.5 text-sm text-ink-base focus:outline-none focus:border-brand-500" />
+
+            <div className="grid gap-2 mt-5">
+              <button disabled={!freeDate || freeBusy} onClick={() => void setFree(new Date(`${freeDate}T00:00:00+01:00`).toISOString())}
+                className="py-3 bg-brand-500 text-white rounded-2xl text-sm font-semibold disabled:opacity-50">
+                {freeBusy ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Free until this date'}
+              </button>
+              <button disabled={freeBusy} onClick={() => void setFree('2099-12-31T00:00:00+01:00')}
+                className="py-3 border border-ink-subtle/20 text-ink-base rounded-2xl text-sm">Free for now, no end date</button>
+              {isFree(freeFor) && (
+                <button disabled={freeBusy} onClick={() => void setFree(null)}
+                  className="py-3 bg-red-500/10 text-red-400 rounded-2xl text-sm">End free period now</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create/Edit form modal */}
       {showForm && (

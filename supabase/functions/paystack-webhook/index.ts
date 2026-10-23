@@ -34,6 +34,14 @@ serve(async (req) => {
 
     console.log(`Payment confirmed: ${reference} — ₦${amountNaira} — type: ${type}`)
 
+    // ID verification fee: confirmed by one shared database function (also used by verify-payment).
+    if (type === 'id_verification' && userId) {
+      const { data: result, error: idErr } = await supabase.rpc('confirm_id_payment', { p_user: userId, p_ref: reference, p_amount: amount })
+      if (idErr) console.error('confirm_id_payment failed (run payment-confirmation.sql):', idErr.message)
+      else console.log('ID payment', reference, result)
+      return new Response('OK', { status: 200 })
+    }
+
     // Paystack can send the same event more than once. Only act the first time we see a reference.
     const { error: dupErr } = await supabase.from('processed_payments').insert({ reference, kind: type })
     if (dupErr && dupErr.code === '23505') {
@@ -41,26 +49,6 @@ serve(async (req) => {
       return new Response('ok', { status: 200 })
     }
     if (dupErr) console.error('processed_payments check failed (run verification-setup.sql):', dupErr.message)
-
-    // ID verification fee: exactly NGN 200 or more (amount is in kobo). Gives 3 attempts.
-    if (type === 'id_verification' && userId) {
-      if (amount < 20000) {
-        console.error('ID fee amount mismatch', reference, amount)
-        return new Response('ok', { status: 200 })
-      }
-      const { data: prof } = await supabase.from('profiles').select('id_status').eq('id', userId).maybeSingle()
-      if (prof && ['none', 'rejected', 'paid'].includes(prof.id_status)) {
-        await supabase.from('profiles').update({ id_status: 'paid', id_attempts_left: 3 }).eq('id', userId)
-        await supabase.from('notifications').insert({
-          user_id: userId, type: 'system',
-          title: 'Payment received', body: 'Now add your details and selfie to finish ID verification.',
-          data: { link: '/verify-id' },
-        })
-      } else {
-        console.error('ID fee paid but status is', prof?.id_status, reference)
-      }
-      return new Response('OK', { status: 200 })
-    }
 
         const orderIds: string[] = metadata?.order_ids ?? (orderId ? [orderId] : [])
     if (type === 'order_payment' && orderIds.length > 0) {
@@ -97,6 +85,7 @@ serve(async (req) => {
         title: 'Verification Submitted', body: 'Your verification payment was received. An agent will contact you within 3–5 business days.',
         data: { verification_id: verificationId },
       })
+      await supabase.rpc('notify_staff', { p_title: 'Verification paid', p_body: `A user paid ₦${amountNaira.toLocaleString()} for verification (${type}).`, p_link: '/admin/verifications' })
     }
 
     if (type === 'wallet_topup' && userId) {

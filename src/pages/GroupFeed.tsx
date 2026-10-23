@@ -7,6 +7,8 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useTypingIndicator } from '@/hooks/useTypingIndicator'
 import { sendGroupNotification } from '@/hooks/useNotifications'
+import { useAuth } from '@/hooks/useAuth'
+import { isStaff } from '@/lib/staff'
 import { toast } from 'sonner'
 
 const DEV = import.meta.env.DEV
@@ -52,6 +54,7 @@ interface Group {
   description: string
   market_name: string
   member_count: number
+  free_until: string | null
 }
 
 function timeAgo(ts: string) {
@@ -119,6 +122,7 @@ function UserProfileSheet({
 export default function GroupFeed() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user, profile } = useAuth()
 
   const [group, setGroup] = useState<Group | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
@@ -137,10 +141,11 @@ export default function GroupFeed() {
   const [typingUsers, setTypingUsers] = useState<{ userId: string; displayName: string }[]>([])
   const [follows, setFollows] = useState<Set<string>>(new Set())
   const [profileSheet, setProfileSheet] = useState<{ userId: string; name: string; roles: string[] } | null>(null)
-  const [myRoles] = useState<string[]>(DEV ? ['buyer', 'seller', 'rider', 'admin', 'super_admin'] : ['buyer'])
+  const myRoles: string[] = DEV ? ['buyer', 'seller', 'rider', 'admin', 'super_admin'] : (profile?.roles ?? ['buyer'])
+  const staff = !DEV && isStaff(myRoles)
 
-  const uid = DEV ? DEV_UID : null
-  const uname = DEV ? DEV_NAME : 'User'
+  const uid = DEV ? DEV_UID : (user?.id ?? null)
+  const uname = DEV ? DEV_NAME : (profile?.display_name ?? 'User')
 
   const { handleTyping } = useTypingIndicator({
     channelName: `group-typing-${id ?? ''}`,
@@ -153,7 +158,7 @@ export default function GroupFeed() {
     if (!id) return
     const { data } = await supabase
       .from('market_groups')
-      .select('id, name, description, member_count, market:ng_markets!market_id(name)')
+      .select('*, market:ng_markets!market_id(name)')
       .eq('id', id)
       .single()
     if (data) {
@@ -164,6 +169,7 @@ export default function GroupFeed() {
         description: data.description as string,
         market_name: m?.name ?? '',
         member_count: (data.member_count as number) ?? 0,
+        free_until: (data.free_until as string | null) ?? null,
       })
     }
   }, [id])
@@ -286,7 +292,7 @@ export default function GroupFeed() {
       images: postImages,
       hashtags: tags,
     })
-    if (error) { toast.error('Failed to post'); return }
+    if (error) { toast.error(error.message.includes('Join') || error.message.includes('Staff') ? error.message : 'Failed to post'); return }
     // If post has images, show how many subscribers will be notified
     if (postImages.length > 0 && !DEV) {
       const { count } = await supabase
@@ -314,7 +320,7 @@ export default function GroupFeed() {
       content: replyContent.trim(),
       price: replyPrice ? Number(replyPrice) : null,
     })
-    if (error) { toast.error('Failed to reply'); return }
+    if (error) { toast.error(error.message.includes('Join') || error.message.includes('Staff') ? error.message : 'Failed to reply'); return }
     toast.success('Reply sent!')
     // Notify post author
     const post = posts.find(p => p.id === postId)
@@ -402,9 +408,11 @@ export default function GroupFeed() {
         <button onClick={shareGroup} className="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center">
           <Share2 size={16} className="text-zinc-300" />
         </button>
-        <button onClick={() => setShowComposer(true)} className="bg-brand-500 text-black text-xs font-bold px-3 py-2 rounded-xl">
-          + Post
-        </button>
+        {!staff && (
+          <button onClick={() => setShowComposer(true)} className="bg-brand-500 text-black text-xs font-bold px-3 py-2 rounded-xl">
+            + Post
+          </button>
+        )}
       </div>
 
       {/* Group profile header */}
@@ -434,6 +442,11 @@ export default function GroupFeed() {
             </div>
           )}
         </div>
+        {group?.free_until && new Date(group.free_until).getTime() > Date.now() && (
+          <p className="mt-3 text-xs font-bold" style={{ color: 'var(--k-accent)' }}>
+            {new Date(group.free_until).getFullYear() >= 2090 ? 'Free for now' : `Free until ${new Date(group.free_until).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+          </p>
+        )}
         {group?.description && <p className="mt-3 text-xs text-zinc-400 leading-relaxed">{group.description}</p>}
         <button onClick={shareGroup} className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-semibold hover:bg-zinc-700 transition-colors">
           <Share2 size={14} /> Share this group
@@ -514,7 +527,7 @@ export default function GroupFeed() {
             <Tag size={40} className="text-zinc-600 mx-auto mb-3" />
             <p className="text-zinc-400 text-sm">No posts yet</p>
             <p className="text-zinc-600 text-xs mt-1">Be the first to post a want-request</p>
-            <button onClick={() => setShowComposer(true)} className="mt-4 bg-brand-500 text-black text-xs font-bold px-5 py-2.5 rounded-xl">Post Now</button>
+            {!staff && <button onClick={() => setShowComposer(true)} className="mt-4 bg-brand-500 text-black text-xs font-bold px-5 py-2.5 rounded-xl">Post Now</button>}
           </div>
         )}
 
@@ -617,7 +630,7 @@ export default function GroupFeed() {
 
             {/* Action bar */}
             <div className="flex gap-2 mt-3">
-              {post.post_type === 'want' && post.author_id !== uid && (
+              {!staff && post.post_type === 'want' && post.author_id !== uid && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
                   className="flex items-center gap-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-zinc-300 font-semibold"
@@ -625,7 +638,7 @@ export default function GroupFeed() {
                   <Tag size={13} /> Reply with Price
                 </button>
               )}
-              {post.post_type === 'offer' && (
+              {!staff && post.post_type === 'offer' && (
                 <button
                   onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
                   className="flex items-center gap-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-zinc-300 font-semibold"

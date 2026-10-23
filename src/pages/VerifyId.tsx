@@ -50,7 +50,15 @@ export default function VerifyId() {
         amount: ID_FEE_KOBO,
         ref: generateRef('KASAJA_ID'),
         metadata: { type: 'id_verification', user_id: user.id },
-        callback: () => setWaiting(true),
+        callback: (response: { reference: string }) => {
+          setWaiting(true)
+          void (async () => {
+            // ask Paystack right away, so the form opens in seconds
+            const { data, error } = await supabase.functions.invoke('smart-processor', { body: { reference: response.reference } })
+            if (!error && (data as { ok?: boolean } | null)?.ok) { toast.success('Payment confirmed'); clearTickCache(user.id) }
+            await refresh()
+          })()
+        },
         onClose: () => { /* closed without paying */ },
       })
     } catch { toast.error('Could not open the payment window') }
