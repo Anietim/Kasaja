@@ -111,3 +111,16 @@ html:not(#k) .hover\:border-brand-500\/50:hover { border-color: var(--k-accent) 
 html:not(#k) .bg-brand-500.text-white,
 html:not(#k) .bg-brand-500 .text-white,
 html:not(#k) .bg-brand-500.text-black        { color: var(--k-on-accent) !important; }
+
+/* Gradients from the first colour set (purple, cyan, pink) become the single orange accent */
+html:not(#k) { --gradient: linear-gradient(135deg, var(--k-accent), var(--k-accent)); --violet: var(--k-accent); --cyan: var(--k-accent); --pink: var(--k-accent); }
+html:not(#k) .gradient-bg,
+html:not(#k) .btn-gradient { background: var(--k-accent) !important; color: var(--k-on-accent) !important; }
+html:not(#k) .gradient-text { background: none !important; -webkit-text-fill-color: var(--k-accent) !important; color: var(--k-accent) !important; }
+html:not(#k) .bg-zinc-950,
+html:not(#k) .bg-neutral-900,
+html:not(#k) .bg-neutral-950,
+html:not(#k) .bg-slate-900,
+html:not(#k) .bg-gray-900,
+html:not(#k) .bg-\[\#0D1117\],
+html:not(#k) .bg-\[\#0B0B0D\] { background-color: var(--k-surface) !important; }

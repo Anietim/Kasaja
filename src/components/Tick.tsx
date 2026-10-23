@@ -71,13 +71,15 @@ interface Row {
   shopper_verified?: boolean | null; business_verified?: boolean | null; is_trusted?: boolean | null
 }
 
-const cache = new Map<string, Promise<Row | null>>()
+const cache = new Map<string, { at: number; p: Promise<Row | null> }>()
+const TTL_MS = 20_000
 export function clearTickCache(userId?: string) { if (userId) cache.delete(userId); else cache.clear() }
 
-function fetchRow(userId: string): Promise<Row | null> {
-  let p = cache.get(userId)
-  if (!p) {
-    p = (async () => {
+function fetchRow(userId: string, force = false): Promise<Row | null> {
+  const hit = cache.get(userId)
+  if (hit && !force && Date.now() - hit.at < TTL_MS) return hit.p
+  {
+    const p = (async () => {
       const full = await supabase.from('profiles')
         .select('id_status, roles, seller_verified, rider_verified, shopper_verified, business_verified, is_trusted')
         .eq('id', userId).maybeSingle()
@@ -86,9 +88,9 @@ function fetchRow(userId: string): Promise<Row | null> {
       const basic = await supabase.from('profiles').select('roles, seller_verified, rider_verified').eq('id', userId).maybeSingle()
       return (basic.data as Row | null) ?? null
     })()
-    cache.set(userId, p)
+    cache.set(userId, { at: Date.now(), p })
+    return p
   }
-  return p
 }
 
 export function ticksFor(row: Row | null): TickKind[] {
@@ -120,12 +122,25 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
   useEffect(() => {
     let alive = true
     if (!userId) return
-    void fetchRow(userId).then(r => {
-      if (!alive) return
-      const k = ticksFor(r)
-      setKinds(k.length > 0 ? k : legacyVerified ? ['seller'] : [])
-    })
-    return () => { alive = false }
+    const load = () => {
+      void fetchRow(userId).then(r => {
+        if (!alive) return
+        const k = ticksFor(r)
+        setKinds(k.length > 0 ? k : legacyVerified ? ['seller'] : [])
+      })
+    }
+    load()
+    // keep ticks fresh: a tick given while the app is open shows within seconds, with no reload
+    const onVisible = () => { if (document.visibilityState === 'visible') load() }
+    const timer = window.setInterval(onVisible, 30_000)
+    window.addEventListener('focus', load)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      alive = false
+      window.clearInterval(timer)
+      window.removeEventListener('focus', load)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [userId, legacyVerified])
 
   if (kinds.length === 0) return null

@@ -18,7 +18,9 @@ const DEV_NAME = 'Dev Admin'
 
 // Messaging rules
 function canDM(myRoles: string[], theirRoles: string[]): boolean {
-  if (myRoles.includes('super_admin') || myRoles.includes('admin')) return true
+  // Staff never start messages, and nobody messages staff here. Users contact KASAJA through Report.
+  const staffRole = (r: string[]) => r.some(x => ['admin', 'super_admin', 'investigation_admin'].includes(x))
+  if (staffRole(myRoles) || staffRole(theirRoles)) return false
   // Buyer can message seller and rider
   if (myRoles.includes('buyer') && (theirRoles.includes('seller') || theirRoles.includes('rider'))) return true
   // Seller can message buyer
