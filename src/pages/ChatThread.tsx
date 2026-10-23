@@ -383,6 +383,13 @@ export default function ChatThread() {
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} group mb-1`}>
              
               <div className="max-w-[75%]">
+                {/* Sender name + ticks (first message of a run, received only) */}
+                {!isMine && showAvatar && (
+                  <p className="flex items-center gap-1 text-[11px] font-semibold text-zinc-400 mb-0.5 px-1">
+                    <span className="truncate">{msg.sender?.display_name ?? conv?.other.display_name}</span>
+                    <UserTicks userId={msg.sender_id} size={12} plain />
+                  </p>
+                )}
                 {/* Reply context */}
                 {msg.reply_to && (
                   <div className={`mb-1 px-3 py-1.5 rounded-lg border-l-2 border-brand-500 bg-zinc-800/50 text-xs text-zinc-400`}>

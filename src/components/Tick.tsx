@@ -80,13 +80,9 @@ function fetchRow(userId: string, force = false): Promise<Row | null> {
   if (hit && !force && Date.now() - hit.at < TTL_MS) return hit.p
   {
     const p = (async () => {
-      const full = await supabase.from('profiles')
-        .select('id_status, roles, seller_verified, rider_verified, shopper_verified, business_verified, is_trusted')
-        .eq('id', userId).maybeSingle()
-      if (!full.error) return (full.data as Row | null)
-      // columns not added yet (verification-setup.sql not run): fall back to what exists
-      const basic = await supabase.from('profiles').select('roles, seller_verified, rider_verified').eq('id', userId).maybeSingle()
-      return (basic.data as Row | null) ?? null
+      // select('*') returns whichever tick columns exist, so a missing column can never hide every tick
+      const res = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+      return (res.data as Row | null) ?? null
     })()
     cache.set(userId, { at: Date.now(), p })
     return p
@@ -109,7 +105,7 @@ export function ticksFor(row: Row | null): TickKind[] {
 }
 
 /** Every tick a person has, in order: black ID tick, paid role ticks, earned tick. Tap one to see what was checked. */
-export function UserTicks({ userId, size = 18, compact = false, legacyVerified = false, plain = false }: {
+export function UserTicks({ userId, size = 18, compact = false, plain = false }: {
   userId?: string | null; size?: number
   /** not tappable: use inside a button or link */
   plain?: boolean
@@ -128,7 +124,7 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
       void fetchRow(userId).then(r => {
         if (!alive) return
         const k = ticksFor(r)
-        setKinds(k.length > 0 ? k : legacyVerified ? ['seller'] : [])
+        setKinds(k)
       })
     }
     load()
@@ -143,7 +139,7 @@ export function UserTicks({ userId, size = 18, compact = false, legacyVerified =
       window.removeEventListener('focus', load)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [userId, legacyVerified])
+  }, [userId])
 
   if (kinds.length === 0) return null
   const shown = kinds.includes('team') ? ['team' as TickKind] : compact ? kinds.slice(-1) : kinds
