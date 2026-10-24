@@ -9,6 +9,7 @@ export interface CartItem {
   quantity: number
   store_id: string
   store_name: string
+  owner_id?: string
 }
 
 const CART_KEY = 'kasaja_cart'
@@ -68,4 +69,19 @@ export function useCart() {
   const count = items.reduce((sum, i) => sum + i.quantity, 0)
 
   return { items, add, remove, updateQty, clear, total, count }
+}
+
+/* ───── Cart panel open/close (shared across the app) ───── */
+let panelOpen = false
+const panelListeners = new Set<(o: boolean) => void>()
+export function openCart() { panelOpen = true; panelListeners.forEach(f => f(true)) }
+export function closeCart() { panelOpen = false; panelListeners.forEach(f => f(false)) }
+export function useCartPanel() {
+  const [open, setOpen] = useState(panelOpen)
+  useEffect(() => {
+    panelListeners.add(setOpen)
+    setOpen(panelOpen)
+    return () => { panelListeners.delete(setOpen) }
+  }, [])
+  return { open, openCart, closeCart }
 }

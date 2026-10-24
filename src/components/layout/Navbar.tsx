@@ -5,6 +5,7 @@ import MobilePanel from './MobilePanel'
 import NavDrawer from './NavDrawer'
 import NotificationCenter from '@/components/NotificationCenter'
 import { useNotifications } from '@/hooks/useNotifications'
+import { CartButton } from '@/components/CartPanel'
 
 export default function Navbar() {
   const navigate             = useNavigate()
@@ -86,6 +87,8 @@ export default function Navbar() {
           >
             <LayoutGrid size={20} />
           </button>
+
+          <CartButton size={20} className="p-2 min-w-[44px] min-h-[44px]" style={{ color: 'var(--k-text)' }} />
 
           <button
             onClick={() => setNotifsOpen(true)}

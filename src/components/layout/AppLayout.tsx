@@ -8,6 +8,7 @@ import '@/styles/kasaja-theme.css'
 import { useEffect } from 'react'
 import { useNewFeed } from '@/hooks/useNewFeed'
 import IdPrompt from '@/components/IdPrompt'
+import CartPanel from '@/components/CartPanel'
 
 export default function AppLayout() {
   const desk = useDesk()
@@ -23,14 +24,15 @@ export default function AppLayout() {
   if (desk) {
     return (
       <div className="h-dvh overflow-x-auto overflow-y-hidden" style={{ backgroundColor: 'var(--k-bg)' }}>
-        <div className="flex h-full min-w-[1200px]">
+        <div className="flex h-full min-w-[1100px]">
           <DesktopSidebar />
           <main className="flex-1 min-w-0 h-full overflow-y-auto">
-            <div className="max-w-[920px] mx-auto"><IdPrompt /></div>
+            <div className="max-w-[1180px] mx-auto"><IdPrompt /></div>
             <Outlet />
           </main>
           <RightPanel />
         </div>
+        <CartPanel />
       </div>
     )
   }
@@ -44,6 +46,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
+      <CartPanel />
     </div>
   )
 }

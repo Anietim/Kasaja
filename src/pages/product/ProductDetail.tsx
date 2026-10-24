@@ -58,7 +58,7 @@ export default function ProductDetail() {
   const isOwner = !!user && p.store?.owner_id === user.id
   const item = {
     id: p.id, product_id: p.id, title: p.title, price: p.price_kobo / 100,
-    image: images[0] ?? '', store_id: p.store?.id ?? '', store_name: p.store?.name ?? '',
+    image: images[0] ?? '', store_id: p.store?.id ?? '', store_name: p.store?.name ?? '', owner_id: p.store?.owner_id,
   }
 
   function addToCart() {

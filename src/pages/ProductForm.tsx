@@ -72,6 +72,7 @@ export default function ProductForm() {
   async function submit() {
     if (!user) { setError('Please log in first'); return }
     if (!title.trim()) { setError('Product title is required'); return }
+    if (!location.trim()) { setError('Add the location (state and market, e.g. Lagos, Mandilas) so buyers know where you are'); return }
     if (!category) { setError('Please select a category'); return }
     if (!priceKobo || isNaN(Number(priceKobo))) { setError('Please enter a valid price'); return }
     if (images.length === 0) { setError('Please add at least one product photo'); return }
@@ -306,11 +307,11 @@ export default function ProductForm() {
 
         {/* Location */}
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">Location</label>
+          <label className="block text-sm font-medium text-zinc-300 mb-1.5">Location (state, market) *</label>
           <input
             value={location}
             onChange={e => setLocation(e.target.value)}
-            placeholder="e.g. Balogun Market, Lagos Island"
+            placeholder="e.g. Lagos, Mandilas"
             className="w-full bg-surface border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-brand-500"
           />
         </div>

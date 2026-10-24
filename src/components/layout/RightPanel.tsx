@@ -7,6 +7,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { useLiveOrder } from '@/hooks/useLiveOrder'
 import WhoToFollow from '@/components/home/WhoToFollow'
 import RiderBike from '@/components/layout/RiderBike'
+import { CartButton } from '@/components/CartPanel'
 
 const LABEL = { color: 'var(--k-muted)' }
 
@@ -168,9 +169,9 @@ export default function RightPanel() {
   }
 
   return (
-    <aside className="w-[340px] shrink-0 h-full flex flex-col" style={{ background: 'var(--k-bg)', borderLeft: '1px solid var(--k-line)' }}>
+    <aside className="w-[300px] shrink-0 h-full flex flex-col" style={{ background: 'var(--k-bg)', borderLeft: '1px solid var(--k-line)' }}>
       {/* Search + bell */}
-      <div className="flex items-center gap-2.5 p-5 pb-4 shrink-0">
+      <div className="flex items-center gap-2 p-4 pb-3.5 shrink-0">
         <form onSubmit={handleSearch} className="flex-1 relative">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={LABEL} />
           <input
@@ -188,6 +189,7 @@ export default function RightPanel() {
             </button>
           )}
         </form>
+        <CartButton className="w-[42px] h-[42px] rounded-full" style={{ border: '1px solid var(--k-line)', color: 'var(--k-text)' }} />
         <button
           onClick={() => setNotifsOpen(true)}
           aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
@@ -205,13 +207,13 @@ export default function RightPanel() {
       </div>
 
       {/* Scrolling middle */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-6">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 space-y-6">
         <TopGroups />
         <WhoToFollow />
       </div>
 
       {/* Pinned to the bottom */}
-      <div className="shrink-0 p-5 space-y-3" style={{ borderTop: '1px solid var(--k-line)' }}>
+      <div className="shrink-0 p-4 space-y-3" style={{ borderTop: '1px solid var(--k-line)' }}>
         <OrderOnTheWayButton />
         <FlashDealsButton />
       </div>

@@ -42,7 +42,7 @@ export function useNewFeed(poll = false) {
   useEffect(() => {
     if (!poll || !user) return
     const run = () => { if (document.visibilityState === 'visible') void check(user.id) }
-    const t = setInterval(run, 45000)
+    const t = setInterval(run, 120000)
     document.addEventListener('visibilitychange', run)
     return () => { clearInterval(t); document.removeEventListener('visibilitychange', run) }
   }, [poll, user])

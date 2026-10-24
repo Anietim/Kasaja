@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, Users } from 'lucide-react'
+import { MapPin, Package, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useDesk } from '@/hooks/useDesk'
@@ -11,7 +11,8 @@ type Item = {
   title: string
   price_kobo: number
   images: string[]
-  store: { name: string; owner_id: string } | null
+  location?: string | null
+  store: { name: string; owner_id: string; state?: string | null; market?: { name: string } | null } | null
 }
 
 const naira = (kobo: number) => '₦' + (kobo / 100).toLocaleString('en-NG')
@@ -33,13 +34,16 @@ export default function FollowingFeed() {
       setFollowsAnyone(ids.length > 0)
       if (ids.length === 0) { setItems([]); setLoaded(true); return }
 
-      const { data } = await supabase
+      const build = (cols: string) => supabase
         .from('products')
-        .select('id,title,price_kobo,images,store:stores!inner(name,owner_id)')
+        .select(cols)
         .eq('status', 'active')
         .in('store.owner_id', ids)
         .order('created_at', { ascending: false })
         .limit(8)
+      let res = await build('id,title,price_kobo,images,location,store:stores!inner(name,owner_id,state,market:ng_markets(name))')
+      if (res.error) res = await build('id,title,price_kobo,images,store:stores!inner(name,owner_id)')
+      const data = res.data
       setItems((data ?? []) as unknown as Item[])
       setLoaded(true)
     })()
@@ -72,7 +76,7 @@ export default function FollowingFeed() {
           )}
         </div>
       ) : (
-        <div className={`grid gap-3 ${desk ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <div className={`grid gap-3 ${desk ? 'grid-cols-3 min-[1400px]:grid-cols-4' : 'grid-cols-2'}`}>
           {items.map(p => (
             <button key={p.id} onClick={() => void navigate(`/product/${p.id}`)}
               className="rounded-2xl overflow-hidden text-left transition-transform active:scale-[0.97]"
@@ -84,7 +88,16 @@ export default function FollowingFeed() {
               </div>
               <div className="px-3.5 pt-3 pb-3.5">
                 <p className="text-sm font-bold line-clamp-1" style={{ color: 'var(--k-text)' }}>{p.title}</p>
-                <p className="text-xs mt-0.5 mb-2 flex items-center gap-1" style={{ color: 'var(--k-muted)' }}><span className="truncate">{p.store?.name}</span><UserTicks userId={p.store?.owner_id} size={12} plain /></p>
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1.5 mb-2 min-w-0">
+                  <span className="inline-flex items-center gap-1 min-w-0 max-w-full text-[13px] font-bold" style={{ color: 'var(--k-text)' }}>
+                    <span className="truncate">{p.store?.name}</span><UserTicks userId={p.store?.owner_id} size={12} plain />
+                  </span>
+                  {((p.location ?? '').trim() || [p.store?.state, p.store?.market?.name].filter(Boolean).join(' · ')) && (
+                    <span className="inline-flex items-center gap-1 min-w-0 max-w-full text-[12.5px] font-bold" style={{ color: 'var(--k-muted)' }}>
+                      <MapPin size={12} className="shrink-0" /><span className="truncate">{(p.location ?? '').trim() || [p.store?.state, p.store?.market?.name].filter(Boolean).join(' · ')}</span>
+                    </span>
+                  )}
+                </div>
                 <p className="font-mono text-[15px] tabular-nums" style={{ color: 'var(--k-accent)' }}>{naira(p.price_kobo)}</p>
               </div>
             </button>

@@ -92,6 +92,7 @@ export default function MyOrders() {
             .select('*, store:stores(name, logo_url)')
         .eq('buyer_id', uid)
         .order('created_at', { ascending: false })
+        .limit(100)
       if (data) setOrders(data as Order[])
     } finally {
       setLoading(false)

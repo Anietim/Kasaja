@@ -50,8 +50,8 @@ export default function Trending() {
       }
       // Real: aggregate hashtags from products and group_posts
       const [{ data: pData }, { data: gData }] = await Promise.all([
-        supabase.from('products').select('hashtags').not('hashtags', 'is', null),
-        supabase.from('group_posts').select('hashtags').not('hashtags', 'is', null),
+        supabase.from('products').select('hashtags').not('hashtags', 'is', null).order('created_at', { ascending: false }).limit(500),
+        supabase.from('group_posts').select('hashtags').not('hashtags', 'is', null).order('created_at', { ascending: false }).limit(500),
       ])
       const counts: Record<string, { count: number; sources: Set<string> }> = {}
       const addTags = (tags: string[] | null, source: string) => {

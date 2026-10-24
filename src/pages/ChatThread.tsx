@@ -160,8 +160,9 @@ export default function ChatThread() {
       .from('messages')
       .select('*, sender:profiles!sender_id(display_name,avatar_url,roles)')
       .eq('conversation_id', id)
-      .order('created_at', { ascending: true })
-    setMessages(data ?? [])
+      .order('created_at', { ascending: false })
+      .limit(150)
+    setMessages([...(data ?? [])].reverse())
     setLoading(false)
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
     // Mark messages as read

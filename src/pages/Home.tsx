@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Heart, MapPin, Package, Plus } from 'lucide-react'
+import { Heart, MapPin, Package, Plus, ShoppingCart } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuth } from '@/hooks/useAuth'
+import { isStaff } from '@/lib/staff'
+import { useCart, openCart } from '@/hooks/useCart'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { StoryViewer } from '@/components/StoryViewer'
@@ -14,8 +18,8 @@ import { UserTicks } from '@/components/Tick'
 interface Product {
   id: string; title: string; price_kobo: number; price_type: string
   images: string[]; category: string
-  store: { name: string; is_verified: boolean; owner_id?: string }
-  likes_count: number; location?: string
+  store: { id?: string; name: string; is_verified: boolean; owner_id?: string; state?: string | null; market?: { name: string } | null }
+  likes_count: number; location?: string | null
 }
 
 interface Story {
@@ -33,6 +37,9 @@ type StoryRow = { id: string; user_id: string; media_url: string; media_type: st
 
 export default function Home() {
   const navigate = useNavigate()
+  const { user: authUser, profile: authProfile } = useAuth()
+  const cart = useCart()
+  const canShop = !isStaff(authProfile?.roles)
   const desk = useDesk()
   const newCount = useNewFeed()
   const topRef = useRef<HTMLDivElement>(null)
@@ -75,16 +82,22 @@ export default function Home() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    let q = supabase
-      .from('products')
-      .select('id,title,price_kobo,price_type,images,category,likes_count,store:stores(name,is_verified,owner_id)')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(30)
-    if (category !== 'All') q = q.eq('category', category)
-
-    const { data } = await q
-    setProducts((data ?? []) as unknown as Product[])
+    const build = (cols: string) => {
+      let q = supabase
+        .from('products')
+        .select(cols)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(30)
+      if (category !== 'All') q = q.eq('category', category)
+      return q
+    }
+    const base = 'id,title,price_kobo,price_type,images,category,likes_count'
+    // Rich query adds location + store state/market. If a column is missing, fall back to the plain query so Home never goes blank.
+    let res = await build(`${base},location,store:stores(id,name,is_verified,owner_id,state,market:ng_markets(name))`)
+    if (res.error) res = await build(`${base},store:stores(id,name,is_verified,owner_id)`)
+    if (res.error) res = await build(`${base},store:stores(name,is_verified,owner_id)`)
+    setProducts((res.data ?? []) as unknown as Product[])
     setLoading(false)
     markFeedSeen()
   }, [category])
@@ -141,10 +154,31 @@ useEffect(() => {
 
   const CARD = { background: 'var(--k-surface)', border: '1px solid var(--k-line)' }
 
+  /** "Lagos · Mandilas": the seller's typed location, else the store's state and market */
+  const locText = (p: Product) =>
+    (p.location ?? '').trim() || [p.store?.state, p.store?.market?.name].filter(Boolean).join(' · ')
+
+  function buyNow(p: Product) {
+    void navigate('/checkout', { state: { items: [{
+      id: p.id, product_id: p.id, title: p.title, price: p.price_kobo / 100,
+      image: p.images?.[0] ?? '', store_id: p.store?.id ?? '', store_name: p.store?.name ?? 'Store',
+      owner_id: p.store?.owner_id, quantity: 1,
+    }], total: undefined } })
+  }
+
+  function addToCart(p: Product) {
+    cart.add({
+      id: p.id, product_id: p.id, title: p.title, price: p.price_kobo / 100,
+      image: p.images?.[0] ?? '', store_id: p.store?.id ?? '', store_name: p.store?.name ?? 'Store',
+      owner_id: p.store?.owner_id,
+    })
+    toast.success('Added to cart', { action: { label: 'View cart', onClick: openCart } })
+  }
+
   return (
     <div className={`min-h-dvh ${desk ? 'pb-10' : 'pb-28'}`} style={{ background: 'var(--k-bg)' }}>
       <div ref={topRef} />
-      <div className={desk ? 'max-w-[920px] mx-auto' : 'max-w-[820px] mx-auto'}>
+      <div className={desk ? 'max-w-[1180px] mx-auto' : 'max-w-[820px] mx-auto'}>
 
         {/* ── Stories ── */}
         <div className={`px-4 pb-1 ${desk ? 'pt-7' : 'pt-4'}`}>
@@ -258,7 +292,7 @@ useEffect(() => {
           </div>
 
           {loading ? (
-            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-3'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3 min-[1400px]:grid-cols-4' : 'grid-cols-2 md:grid-cols-3'}`}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-2xl overflow-hidden animate-pulse" style={CARD}>
                   <div className="w-full aspect-[4/3]" style={{ background: 'var(--k-surface2)' }} />
@@ -275,7 +309,7 @@ useEffect(() => {
               <p className="text-xs mt-1" style={{ color: 'var(--k-muted)' }}>Try another category, or check back soon.</p>
             </div>
           ) : (
-            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-3'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${desk ? 'grid-cols-3 min-[1400px]:grid-cols-4' : 'grid-cols-2 md:grid-cols-3'}`}>
               {products.map((p, idx) => (
                 <motion.div
                   key={p.id}
@@ -315,19 +349,63 @@ useEffect(() => {
                     </button>
                   </div>
 
-                  <div className="px-3.5 pt-3 pb-3.5">
-                    <p className="text-sm font-bold leading-snug line-clamp-2" style={{ color: 'var(--k-text)' }}>{p.title}</p>
-                    <div className="flex items-center gap-1 mt-1 mb-2.5 min-w-0">
-                      <span className="text-xs truncate" style={{ color: 'var(--k-muted)' }}>{p.store?.name ?? 'Store'}</span>
-                      <UserTicks userId={p.store?.owner_id} size={13} plain legacyVerified={!!p.store?.is_verified} />
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-mono text-[15px] tabular-nums" style={{ color: 'var(--k-accent)' }}>{fmt(p.price_kobo)}</p>
-                      {desk && (
-                        <span className="inline-flex h-8 px-4 rounded-full items-center text-xs font-extrabold"
-                          style={{ border: '1px solid var(--k-accent)', color: 'var(--k-accent)' }}>Buy</span>
+                  <div className="px-3 pt-2.5 pb-3">
+                    <p className="text-sm font-bold leading-snug line-clamp-1" style={{ color: 'var(--k-text)' }}>{p.title}</p>
+
+                    {/* Store and location: same row when they fit, location drops under the store name when they do not */}
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1.5 min-w-0">
+                      <span className="inline-flex items-center gap-1 min-w-0 max-w-full text-[13px] font-bold" style={{ color: 'var(--k-text)' }}>
+                        <span className="truncate">{p.store?.name ?? 'Store'}</span>
+                        <UserTicks userId={p.store?.owner_id} size={13} plain legacyVerified={!!p.store?.is_verified} />
+                      </span>
+                      {locText(p) && (
+                        <span className="inline-flex items-center gap-1 min-w-0 max-w-full text-[12.5px] font-bold" style={{ color: 'var(--k-muted)' }}>
+                          <MapPin size={12} className="shrink-0" /><span className="truncate">{locText(p)}</span>
+                        </span>
                       )}
                     </div>
+
+                    <p className="font-mono text-[15px] tabular-nums mt-2 mb-2" style={{ color: 'var(--k-accent)' }}>{fmt(p.price_kobo)}</p>
+
+                    {canShop && (p.store?.owner_id === authUser?.id ? (
+                      <button
+                        onClick={e => { e.stopPropagation(); void navigate('/store/dashboard') }}
+                        className="w-full h-[34px] rounded-[10px] text-[13px] font-extrabold"
+                        style={{ border: '1px solid var(--k-line2)', color: 'var(--k-muted)' }}>
+                        Manage listing
+                      </button>
+                    ) : (() => {
+                      const inCart = cart.items.find(i => i.product_id === p.id)?.quantity ?? 0
+                      return (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={e => { e.stopPropagation(); buyNow(p) }}
+                            className="flex-1 h-[34px] rounded-[10px] text-[13px] font-extrabold transition-transform active:scale-95"
+                            style={{ background: 'var(--k-accent)', color: 'var(--k-on-accent)' }}>
+                            Buy
+                          </button>
+                          {inCart > 0 ? (
+                            <div className="h-[34px] shrink-0 rounded-[10px] flex items-center gap-0.5 px-1"
+                              style={{ border: '1px solid var(--k-accent)', background: 'var(--k-accent-soft)' }}
+                              onClick={e => e.stopPropagation()}>
+                              <button onClick={() => cart.updateQty(p.id, inCart - 1)} aria-label="One less"
+                                className="w-6 h-6 flex items-center justify-center text-base font-extrabold" style={{ color: 'var(--k-accent)' }}>–</button>
+                              <span className="min-w-[14px] text-center text-[13px] font-extrabold" style={{ color: 'var(--k-accent)' }}>{inCart}</span>
+                              <button onClick={() => cart.updateQty(p.id, inCart + 1)} aria-label="One more"
+                                className="w-6 h-6 flex items-center justify-center text-base font-extrabold" style={{ color: 'var(--k-accent)' }}>+</button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={e => { e.stopPropagation(); addToCart(p) }}
+                              aria-label="Add to cart"
+                              className="w-[34px] h-[34px] shrink-0 rounded-[10px] flex items-center justify-center transition-transform active:scale-95"
+                              style={{ border: '1px solid var(--k-accent)', color: 'var(--k-accent)' }}>
+                              <ShoppingCart size={16} />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })())}
                   </div>
                 </motion.div>
               ))}

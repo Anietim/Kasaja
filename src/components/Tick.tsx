@@ -72,7 +72,7 @@ interface Row {
 }
 
 const cache = new Map<string, { at: number; p: Promise<Row | null> }>()
-const TTL_MS = 20_000
+const TTL_MS = 5 * 60_000 // one profile read per person per 5 minutes, shared by every tick on screen
 export function clearTickCache(userId?: string) { if (userId) cache.delete(userId); else cache.clear() }
 
 function fetchRow(userId: string, force = false): Promise<Row | null> {
@@ -130,12 +130,10 @@ export function UserTicks({ userId, size = 18, compact = false, plain = false }:
     load()
     // keep ticks fresh: a tick given while the app is open shows within seconds, with no reload
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
-    const timer = window.setInterval(onVisible, 30_000)
     window.addEventListener('focus', load)
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       alive = false
-      window.clearInterval(timer)
       window.removeEventListener('focus', load)
       document.removeEventListener('visibilitychange', onVisible)
     }
